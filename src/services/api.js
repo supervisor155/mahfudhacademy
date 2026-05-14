@@ -3,8 +3,13 @@ import axios from "axios";
 const NETWORK_TIMEOUT_MS = 15000;
 const MAX_RETRIES = 2;
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:4000";
+
 const API = axios.create({ 
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000",
+  baseURL: API_BASE_URL,
   timeout: NETWORK_TIMEOUT_MS,
 });
 
