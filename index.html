@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Mahfudh Academy is a secure online Islamic learning platform for students and teachers with live classes, Quran reading, notes, bookmarks, and class chat." />
+    <meta name="keywords" content="Quran Academy, online Quran learning, Mushaf notes, Quran classes, Tajweed learning" />
+    <meta property="og:title" content="Mahfudh Academy" />
+    <meta property="og:description" content="Learn Quran online with structured classes, live recitation, Mushaf bookmarks, and secure communication." />
+    <meta property="og:type" content="website" />
+    <meta name="robots" content="index, follow" />
+    <!-- Unregister any stale service workers (e.g. leftover vite-plugin-pwa) before anything else loads -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          var removed = regs.map(function(r) { return r.unregister(); });
+          if (removed.length > 0) {
+            Promise.all(removed).then(function() { location.reload(); });
+          }
+        });
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Preload Uthmanic Hafs font used in the Mushaf page -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+      href="https://fonts.gstatic.com/s/notonaskribarabic/v34/DoS8-FF2kAt3WBNgHWtRFt0OumJsUJEmaGJfAoaA.woff2" />
+    <title>Mahfudh Academy</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
