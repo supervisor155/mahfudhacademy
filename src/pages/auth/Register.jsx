@@ -130,7 +130,6 @@ export default function Register() {
       password,
       name,
       role,
-      registration_verification_token: '', // No OTP verification needed for now
     });
 
     if (result.success) {

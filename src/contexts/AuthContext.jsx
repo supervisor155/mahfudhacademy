@@ -86,14 +86,19 @@ export function AuthProvider({ children }) {
 
   const register = async ({ email, phone, password, name, role, registrationVerificationToken }) => {
     try {
-      const res = await api.post('/api/auth/register', {
+      const payload = {
         email,
         phone,
         password,
         name,
         role,
-        registration_verification_token: registrationVerificationToken,
-      });
+      };
+
+      if (registrationVerificationToken) {
+        payload.registration_verification_token = registrationVerificationToken;
+      }
+
+      const res = await api.post('/api/auth/register', payload);
       const { token: t, refresh_token: rt, user: u } = res.data;
       setToken(t);
       setUser(u);
