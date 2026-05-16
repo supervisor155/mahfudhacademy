@@ -1,6 +1,7 @@
 ﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../../services/api';
+import { resolveMediaUrl } from '../../services/media';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   FaFilm, FaPlus, FaHeart, FaCommentDots, FaShare,
@@ -326,7 +327,10 @@ export default function Reels() {
     try {
       if (offset === 0) setLoading(true); else setLoadingMore(true);
       const res = await api.get(`/api/reels?class_id=${classId}&limit=10&offset=${offset}`);
-      const data = res.data?.data || [];
+      const data = (res.data?.data || []).map((reel) => ({
+        ...reel,
+        url: resolveMediaUrl(reel.url),
+      }));
       if (offset === 0) setReels(data); else setReels((p) => [...p, ...data]);
       setHasMore(data.length === 10);
     } catch { /* silent */ }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../../services/api';
+import { resolveMediaUrl } from '../../services/media';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   FaPlay, FaClock, FaPlus, FaArrowLeft, FaTrash,
@@ -38,7 +39,12 @@ export default function Videos() {
     try {
       const res = await api.get(`/api/videos?class_id=${classId}`);
       const data = res.data?.data || res.data || [];
-      setVideos(Array.isArray(data) ? data : []);
+      setVideos(
+        (Array.isArray(data) ? data : []).map((video) => ({
+          ...video,
+          url: resolveMediaUrl(video.url),
+        }))
+      );
     } catch {
       setError('Failed to load videos');
     } finally {
