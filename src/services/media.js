@@ -11,6 +11,19 @@ function getApiOrigin() {
   }
 }
 
+function sanitizeRawUrl(rawUrl) {
+  const value = decodeURIComponent(String(rawUrl || '')).trim();
+
+  // Recover rows saved with placeholder text before the real uploads path.
+  const uploadsIndex = value.indexOf('/uploads/');
+  if (uploadsIndex >= 0) {
+    return value.slice(uploadsIndex);
+  }
+
+  // Repair malformed scheme variants like https:/example.com/file.mp4.
+  return value.replace(/^https?:\/(?!\/)/i, (match) => `${match}/`);
+}
+
 /**
  * Normalizes media URLs so uploads remain playable across local/prod host changes.
  */
@@ -20,14 +33,15 @@ export function resolveMediaUrl(rawUrl) {
   const apiOrigin = getApiOrigin();
   const currentHost = typeof window !== "undefined" ? window.location.hostname : "";
   const currentProtocol = typeof window !== "undefined" ? window.location.protocol : "";
+  const sanitized = sanitizeRawUrl(rawUrl);
 
   // Relative paths (e.g. /uploads/abc.mp4)
-  if (String(rawUrl).startsWith("/")) {
-    return `${apiOrigin}${rawUrl}`;
+  if (sanitized.startsWith("/")) {
+    return `${apiOrigin}${sanitized}`;
   }
 
   try {
-    const parsed = new URL(rawUrl);
+    const parsed = new URL(sanitized);
 
     // Fix rows saved with localhost when running from a different host.
     if (parsed.hostname === "localhost" && currentHost && currentHost !== "localhost") {
@@ -42,6 +56,6 @@ export function resolveMediaUrl(rawUrl) {
 
     return parsed.toString();
   } catch {
-    return rawUrl;
+    return sanitized;
   }
 }

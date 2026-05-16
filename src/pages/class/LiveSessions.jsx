@@ -65,7 +65,12 @@ export default function LiveSessions() {
 
     socketRef.current = socket;
 
+    socket.on('connect_error', (err) => {
+      setError(err?.message || 'Realtime connection failed');
+    });
+
     socket.on('session:chat:message', (payload) => {
+      setError('');
       if (!activeSessionIdRef.current || String(payload?.session_id) !== String(activeSessionIdRef.current)) return;
       setSessionMessages((prev) => [
         ...prev,
@@ -104,6 +109,10 @@ export default function LiveSessions() {
       setSessionOnline([]);
       setActiveSession(null);
       setChatClosedNotice('Session ended. Temporary live chat was removed.');
+    });
+
+    socket.on('session:chat:error', (payload) => {
+      setError(payload?.message || 'Live session chat failed');
     });
 
     return () => {

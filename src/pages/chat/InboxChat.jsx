@@ -44,6 +44,7 @@ export default function InboxChat() {
   const [messages, setMessages] = useState([]);
   const [search, setSearch] = useState('');
   const [input, setInput] = useState('');
+  const [socketError, setSocketError] = useState('');
   const [onlineMap, setOnlineMap] = useState({});
   const [lastMessageMap, setLastMessageMap] = useState({});
   const [unreadMap, setUnreadMap] = useState({});
@@ -66,6 +67,10 @@ export default function InboxChat() {
     const socket = createAppSocket(token);
     socketRef.current = socket;
 
+    socket.on('connect_error', (err) => {
+      setSocketError(err?.message || 'Realtime connection failed');
+    });
+
     socket.on('chat:users:presence', (payload) => {
       const next = {};
       (payload?.users || []).forEach((u) => {
@@ -80,6 +85,7 @@ export default function InboxChat() {
     });
 
     socket.on('chat:dm:message', (payload) => {
+      setSocketError('');
       const fromId = payload?.from?.id;
       const toId = payload?.to_user_id;
       if (!fromId || !toId) return;
@@ -114,6 +120,10 @@ export default function InboxChat() {
       } else if (fromId !== user?.id) {
         setUnreadMap((prev) => ({ ...prev, [peerId]: (prev[peerId] || 0) + 1 }));
       }
+    });
+
+    socket.on('chat:dm:error', (payload) => {
+      setSocketError(payload?.message || 'Direct messaging failed');
     });
 
     return () => socket.disconnect();
@@ -338,6 +348,11 @@ export default function InboxChat() {
             <section className={`${selectedPeer ? 'flex' : 'hidden'} min-h-screen flex-col sm:min-h-[86vh] md:flex`}>
               {selectedPeer ? (
                 <>
+                  {socketError && (
+                    <div className="border-b border-red-500/20 bg-red-500/10 px-4 py-2 text-sm text-red-200">
+                      {socketError}
+                    </div>
+                  )}
                   <div className="flex items-center justify-between border-b border-[#182132] px-4 py-3">
                     <div className="flex min-w-0 items-center gap-3">
                       <button onClick={() => setSelectedPeer(null)} className="rounded-full p-2 md:hidden hover:bg-white/10">

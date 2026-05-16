@@ -115,6 +115,11 @@ export default function Chat() {
 
     socket.on('disconnect', () => setConnected(false));
 
+    socket.on('connect_error', (err) => {
+      setConnected(false);
+      setError(err?.message || 'Realtime connection failed');
+    });
+
     socket.on('chat:message', (payload) => {
       setMessages((prev) => [
         ...prev,
@@ -130,6 +135,10 @@ export default function Chat() {
     socket.on('chat:online', (payload) => {
       const users = payload?.users || [];
       setOnlineUsers(Array.isArray(users) ? users : []);
+    });
+
+    socket.on('chat:error', (payload) => {
+      setError(payload?.message || 'Class chat failed');
     });
 
     return () => {
