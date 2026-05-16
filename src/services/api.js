@@ -3,10 +3,11 @@ import axios from "axios";
 const NETWORK_TIMEOUT_MS = 15000;
 const MAX_RETRIES = 2;
 
-const API_BASE_URL =
+const API_BASE_URL = String(
   import.meta.env.VITE_API_BASE_URL ||
   import.meta.env.VITE_API_URL ||
-  "http://localhost:4000";
+  "http://localhost:4000"
+).trim().replace(/\/$/, '');
 
 const API = axios.create({ 
   baseURL: API_BASE_URL,

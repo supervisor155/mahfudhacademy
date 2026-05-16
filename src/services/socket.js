@@ -1,9 +1,10 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_BASE_URL =
+const SOCKET_BASE_URL = String(
   import.meta.env.VITE_API_BASE_URL ||
   import.meta.env.VITE_API_URL ||
-  'http://localhost:4000';
+  'http://localhost:4000'
+).trim().replace(/\/$/, '');
 
 export function createAppSocket(token) {
   return io(SOCKET_BASE_URL, {
