@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
@@ -13,6 +13,17 @@ function formatTime(iso) {
   if (!iso) return 'TBD';
   const d = new Date(iso);
   return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+}
+
+function StreamPlayer({ stream, muted = false, className }) {
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    if (!videoRef.current) return;
+    videoRef.current.srcObject = stream || null;
+  }, [stream]);
+
+  return <video ref={videoRef} autoPlay playsInline muted={muted} className={className} />;
 }
 
 export default function LiveSessions() {
@@ -35,6 +46,7 @@ export default function LiveSessions() {
   const [sessionOnline, setSessionOnline] = useState([]);
   const [chatInput, setChatInput] = useState('');
   const [chatClosedNotice, setChatClosedNotice] = useState('');
+  const [remotePeers, setRemotePeers] = useState([]);
 
   // Screen share / media state
   const [screenStream, setScreenStream] = useState(null);
@@ -46,6 +58,12 @@ export default function LiveSessions() {
   const socketRef = useRef(null);
   const activeSessionIdRef = useRef(null);
   const chatEndRef = useRef(null);
+  const screenStreamRef = useRef(null);
+  const camStreamRef = useRef(null);
+  const peerConnectionsRef = useRef(new Map());
+  const remoteStreamsRef = useRef(new Map());
+  const pendingIceRef = useRef(new Map());
+  const remoteMetaRef = useRef(new Map());
 
   useEffect(() => { fetchSessions(); }, [classId]);
 
@@ -59,6 +77,237 @@ export default function LiveSessions() {
   }, [activeSession?.id]);
 
   useEffect(() => {
+    screenStreamRef.current = screenStream;
+  }, [screenStream]);
+
+  useEffect(() => {
+    camStreamRef.current = camStream;
+  }, [camStream]);
+
+  function getOutboundTracks() {
+    const tracks = [];
+    const screenTrack = screenStreamRef.current?.getVideoTracks?.().find((track) => track.readyState === 'live');
+    const cameraTrack = camStreamRef.current?.getVideoTracks?.().find((track) => track.readyState === 'live');
+    const audioTrack = camStreamRef.current?.getAudioTracks?.().find((track) => track.readyState === 'live' && track.enabled);
+
+    if (screenTrack) tracks.push(screenTrack);
+    else if (cameraTrack) tracks.push(cameraTrack);
+    if (audioTrack) tracks.push(audioTrack);
+
+    return tracks;
+  }
+
+  function upsertRemotePeer(peerId, next) {
+    if (!peerId) return;
+    const prevMeta = remoteMetaRef.current.get(peerId) || { id: peerId, name: `User ${peerId}`, role: 'student' };
+    const merged = {
+      ...prevMeta,
+      ...next,
+      id: peerId,
+      stream: next.stream ?? prevMeta.stream ?? remoteStreamsRef.current.get(peerId) ?? null,
+    };
+    remoteMetaRef.current.set(peerId, merged);
+    setRemotePeers(Array.from(remoteMetaRef.current.values()));
+  }
+
+  function removePeer(peerId) {
+    const pc = peerConnectionsRef.current.get(peerId);
+    if (pc) {
+      pc.onicecandidate = null;
+      pc.ontrack = null;
+      pc.onconnectionstatechange = null;
+      pc.close();
+      peerConnectionsRef.current.delete(peerId);
+    }
+
+    remoteStreamsRef.current.delete(peerId);
+    pendingIceRef.current.delete(peerId);
+    remoteMetaRef.current.delete(peerId);
+    setRemotePeers(Array.from(remoteMetaRef.current.values()));
+  }
+
+  function clearPeerState() {
+    Array.from(peerConnectionsRef.current.keys()).forEach((peerId) => removePeer(peerId));
+    peerConnectionsRef.current.clear();
+    remoteStreamsRef.current.clear();
+    pendingIceRef.current.clear();
+    remoteMetaRef.current.clear();
+    setRemotePeers([]);
+  }
+
+  async function flushPendingCandidates(peerId, pc) {
+    const queued = pendingIceRef.current.get(peerId) || [];
+    if (!queued.length) return;
+    pendingIceRef.current.delete(peerId);
+
+    for (const candidate of queued) {
+      try {
+        await pc.addIceCandidate(candidate);
+      } catch {
+        // Ignore invalid ICE candidates.
+      }
+    }
+  }
+
+  function queueIceCandidate(peerId, candidate) {
+    const queued = pendingIceRef.current.get(peerId) || [];
+    queued.push(candidate);
+    pendingIceRef.current.set(peerId, queued);
+  }
+
+  function attachTracksToPeer(pc) {
+    const outboundTracks = getOutboundTracks();
+
+    pc.getSenders().forEach((sender) => {
+      if (sender.track) {
+        try { pc.removeTrack(sender); } catch { /* no-op */ }
+      }
+    });
+
+    outboundTracks.forEach((track) => {
+      try {
+        pc.addTrack(track);
+      } catch {
+        // Track may already be attached during renegotiation.
+      }
+    });
+
+    if (!outboundTracks.some((track) => track.kind === 'video')) {
+      pc.addTransceiver('video', { direction: 'recvonly' });
+    }
+    if (!outboundTracks.some((track) => track.kind === 'audio')) {
+      pc.addTransceiver('audio', { direction: 'recvonly' });
+    }
+  }
+
+  function createPeerConnection(peerId, peerMeta = {}) {
+    if (peerConnectionsRef.current.has(peerId)) {
+      upsertRemotePeer(peerId, peerMeta);
+      return peerConnectionsRef.current.get(peerId);
+    }
+
+    const pc = new RTCPeerConnection({
+      iceServers: [
+        { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
+      ],
+    });
+
+    attachTracksToPeer(pc);
+
+    pc.onicecandidate = ({ candidate }) => {
+      if (!candidate || !socketRef.current || !activeSessionIdRef.current) return;
+      socketRef.current.emit('session:signal', {
+        session_id: activeSessionIdRef.current,
+        to_user_id: peerId,
+        signal: {
+          type: 'ice-candidate',
+          candidate: candidate.toJSON(),
+        },
+      });
+    };
+
+    pc.ontrack = (event) => {
+      let stream = event.streams?.[0];
+      if (!stream) {
+        stream = remoteStreamsRef.current.get(peerId) || new MediaStream();
+        stream.addTrack(event.track);
+      }
+
+      remoteStreamsRef.current.set(peerId, stream);
+      upsertRemotePeer(peerId, { ...peerMeta, stream });
+    };
+
+    pc.onconnectionstatechange = () => {
+      if (['failed', 'closed'].includes(pc.connectionState)) {
+        removePeer(peerId);
+      }
+    };
+
+    peerConnectionsRef.current.set(peerId, pc);
+    upsertRemotePeer(peerId, peerMeta);
+    return pc;
+  }
+
+  async function createOfferForPeer(peerId, peerMeta = {}) {
+    if (!socketRef.current || !activeSessionIdRef.current || peerId === user?.id) return;
+
+    try {
+      const pc = createPeerConnection(peerId, peerMeta);
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      socketRef.current.emit('session:signal', {
+        session_id: activeSessionIdRef.current,
+        to_user_id: peerId,
+        signal: {
+          type: 'offer',
+          sdp: offer.sdp,
+        },
+      });
+    } catch {
+      setError('Failed to negotiate live media connection');
+    }
+  }
+
+  async function handleSessionSignal(payload) {
+    if (!activeSessionIdRef.current || String(payload?.session_id) !== String(activeSessionIdRef.current)) return;
+
+    const peerId = Number(payload?.from_user_id);
+    const signal = payload?.signal;
+    if (!peerId || peerId === user?.id || !signal) return;
+
+    try {
+      const pc = createPeerConnection(peerId);
+
+      if (signal.type === 'offer') {
+        await pc.setRemoteDescription({ type: 'offer', sdp: signal.sdp });
+        await flushPendingCandidates(peerId, pc);
+
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+
+        socketRef.current?.emit('session:signal', {
+          session_id: activeSessionIdRef.current,
+          to_user_id: peerId,
+          signal: {
+            type: 'answer',
+            sdp: answer.sdp,
+          },
+        });
+        return;
+      }
+
+      if (signal.type === 'answer') {
+        await pc.setRemoteDescription({ type: 'answer', sdp: signal.sdp });
+        await flushPendingCandidates(peerId, pc);
+        return;
+      }
+
+      if (signal.type === 'ice-candidate' && signal.candidate) {
+        const candidate = new RTCIceCandidate(signal.candidate);
+        if (!pc.remoteDescription) {
+          queueIceCandidate(peerId, candidate);
+        } else {
+          await pc.addIceCandidate(candidate);
+        }
+      }
+    } catch {
+      setError('Failed to process live media signal');
+    }
+  }
+
+  async function renegotiateAllPeers() {
+    const peers = Array.from(remoteMetaRef.current.values());
+    clearPeerState();
+
+    for (const peer of peers) {
+      if (peer.id !== user?.id) {
+        await createOfferForPeer(peer.id, peer);
+      }
+    }
+  }
+
+  useEffect(() => {
     if (!token) return;
 
     const socket = createAppSocket(token);
@@ -68,6 +317,33 @@ export default function LiveSessions() {
     socket.on('connect_error', (err) => {
       setError(err?.message || 'Realtime connection failed');
     });
+
+    socket.on('session:participants', (payload) => {
+      if (!activeSessionIdRef.current || String(payload?.session_id) !== String(activeSessionIdRef.current)) return;
+      const participants = Array.isArray(payload?.participants) ? payload.participants : [];
+      participants.forEach((participant) => {
+        if (participant?.id && participant.id !== user?.id) {
+          upsertRemotePeer(participant.id, participant);
+        }
+      });
+    });
+
+    socket.on('session:user_joined', (payload) => {
+      if (!activeSessionIdRef.current) return;
+      const peer = payload?.user;
+      if (!peer?.id || peer.id === user?.id) return;
+      upsertRemotePeer(peer.id, peer);
+      createOfferForPeer(peer.id, peer);
+    });
+
+    socket.on('session:user_left', (payload) => {
+      if (!activeSessionIdRef.current) return;
+      const peerId = Number(payload?.user_id);
+      if (!peerId) return;
+      removePeer(peerId);
+    });
+
+    socket.on('session:signal', handleSessionSignal);
 
     socket.on('session:chat:message', (payload) => {
       setError('');
@@ -116,9 +392,10 @@ export default function LiveSessions() {
     });
 
     return () => {
+      clearPeerState();
       socket.disconnect();
     };
-  }, [token]);
+  }, [token, user?.id]);
 
   useEffect(() => {
     if (!activeSession || !socketRef.current) return;
@@ -126,11 +403,13 @@ export default function LiveSessions() {
     setSessionOnline([]);
     setChatInput('');
     setChatClosedNotice('');
+    clearPeerState();
 
     socketRef.current.emit('session:join', { session_id: activeSession.id });
     socketRef.current.emit('session:chat:join', { session_id: activeSession.id });
 
     return () => {
+      clearPeerState();
       socketRef.current?.emit('session:chat:leave', { session_id: activeSession.id });
       socketRef.current?.emit('session:leave', { session_id: activeSession.id });
     };
@@ -181,7 +460,14 @@ export default function LiveSessions() {
     return () => {
       screenStream?.getTracks().forEach((t) => t.stop());
       camStream?.getTracks().forEach((t) => t.stop());
+      clearPeerState();
     };
+  }, []);
+
+  useEffect(() => {
+    if (!activeSession || !socketRef.current) return;
+    if (!remoteMetaRef.current.size) return;
+    renegotiateAllPeers();
   }, [screenStream, camStream]);
 
   const fetchSessions = async () => {
@@ -405,33 +691,50 @@ export default function LiveSessions() {
           {/* Video area */}
           <div className="relative min-h-80 bg-black">
             {screenStream ? (
-              <video
-                ref={screenVideoRef}
-                autoPlay
-                playsInline
+              <StreamPlayer
+                stream={screenStream}
                 muted
+                className="w-full max-h-120 object-contain"
+              />
+            ) : remotePeers[0]?.stream ? (
+              <StreamPlayer
+                stream={remotePeers[0].stream}
                 className="w-full max-h-120 object-contain"
               />
             ) : (
               <div className="flex min-h-80 items-center justify-center text-white/30 flex-col gap-3">
                 <FaDesktop className="text-6xl" />
-                <p className="text-sm">Share your screen to broadcast to students</p>
+                <p className="text-sm">{isTeacher ? 'Share your screen to broadcast to students' : 'Waiting for teacher media stream'}</p>
               </div>
             )}
 
             {/* Camera pip */}
             {camStream && (
               <div className="absolute bottom-4 right-4 w-36 h-24 overflow-hidden rounded-2xl border-2 border-white/20 shadow-lg bg-black">
-                <video
-                  ref={camVideoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="w-full h-full object-cover"
-                />
+                <StreamPlayer stream={camStream} muted className="w-full h-full object-cover" />
               </div>
             )}
           </div>
+
+          {remotePeers.length > 0 && (
+            <div className="grid gap-3 border-t border-white/10 bg-[#0b1716] p-4 sm:grid-cols-2 xl:grid-cols-3">
+              {remotePeers.map((peer) => (
+                <div key={peer.id} className="overflow-hidden rounded-2xl border border-white/10 bg-black/30">
+                  <div className="flex items-center justify-between border-b border-white/10 px-3 py-2 text-xs text-white/70">
+                    <span className="font-semibold text-white/90">{peer.name}</span>
+                    <span className="uppercase tracking-wider">{peer.role}</span>
+                  </div>
+                  <div className="aspect-video bg-black">
+                    {peer.stream ? (
+                      <StreamPlayer stream={peer.stream} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-xs text-white/40">Connecting media…</div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="border-t border-white/10 bg-[#0f1a19]">
             <div className="flex items-center justify-between px-4 py-2.5">
