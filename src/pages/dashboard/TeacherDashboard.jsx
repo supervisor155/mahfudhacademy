@@ -1143,46 +1143,6 @@ function TeacherDashboard() {
         </div>
       </div>
 
-      {/* Mobile Bottom Nav */}
-      <nav
-        className={
-          darkMode
-            ? 'fixed inset-x-0 bottom-0 z-30 border-t border-[#293038] bg-[#181c1f]/95 px-2 py-2 shadow-[0_-10px_30px_rgba(0,0,0,0.24)] backdrop-blur xl:hidden'
-            : 'fixed inset-x-0 bottom-0 z-30 border-t border-[#dde5e0] bg-white/95 px-2 py-2 shadow-[0_-10px_30px_rgba(17,24,39,0.08)] backdrop-blur xl:hidden'
-        }
-      >
-        <div className="grid grid-cols-5 gap-2">
-          {[
-            { id: 'dashboard', label: 'Home', icon: FaHome },
-            { id: 'classes', label: 'Classes', icon: FaBook },
-            { id: 'chat', label: 'Chat', icon: FaComments },
-            { id: 'reels', label: 'Reels', icon: FaFilm },
-            { id: 'sessions', label: 'Live', icon: FaVideo },
-          ].map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => {
-                if (id === 'chat') {
-                  navigate('/chat');
-                  return;
-                }
-                setActiveTab(id);
-              }}
-              className={`flex flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 text-xs font-semibold transition ${
-                activeTab === id
-                  ? 'bg-[#e7f3ef] text-[#234946]'
-                  : darkMode
-                    ? 'text-slate-400 hover:bg-[#1f262d]'
-                    : 'text-slate-500 hover:bg-[#f3f6f4]'
-              }`}
-            >
-              <Icon className="text-base" />
-              <span>{label}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
-
       {/* Create Class Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
