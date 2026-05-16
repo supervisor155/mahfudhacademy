@@ -74,20 +74,23 @@ export default function InboxChat() {
     socket.on('chat:users:presence', (payload) => {
       const next = {};
       (payload?.users || []).forEach((u) => {
-        next[u.user_id] = !!u.online;
+        const id = Number(u.user_id);
+        if (!id) return;
+        next[id] = !!u.online;
       });
       setOnlineMap((prev) => ({ ...prev, ...next }));
     });
 
     socket.on('chat:user:presence', (payload) => {
-      if (!payload?.user_id) return;
-      setOnlineMap((prev) => ({ ...prev, [payload.user_id]: !!payload.online }));
+      const id = Number(payload?.user_id);
+      if (!id) return;
+      setOnlineMap((prev) => ({ ...prev, [id]: !!payload.online }));
     });
 
     socket.on('chat:dm:message', (payload) => {
       setSocketError('');
-      const fromId = payload?.from?.id;
-      const toId = payload?.to_user_id;
+      const fromId = Number(payload?.from?.id);
+      const toId = Number(payload?.to_user_id);
       if (!fromId || !toId) return;
 
       const peerId = fromId === user?.id ? toId : fromId;
@@ -137,7 +140,7 @@ export default function InboxChat() {
         const convRes = await api.get('/api/dm/conversations?limit=50');
         const convData = convRes.data?.data || [];
         const list = (Array.isArray(convData) ? convData : []).map((c) => ({
-          id: c.peer_id,
+          id: Number(c.peer_id),
           name: c.peer_name || `User ${c.peer_id}`,
           role: c.peer_role || 'student',
         }));
@@ -145,8 +148,10 @@ export default function InboxChat() {
         const nextLast = {};
         const nextUnread = {};
         (Array.isArray(convData) ? convData : []).forEach((c) => {
-          nextLast[c.peer_id] = { text: c.message, sent_at: c.created_at };
-          nextUnread[c.peer_id] = Number(c.unread_count) || 0;
+          const peerId = Number(c.peer_id);
+          if (!peerId) return;
+          nextLast[peerId] = { text: c.message, sent_at: c.created_at };
+          nextUnread[peerId] = Number(c.unread_count) || 0;
         });
 
         if (!cancelled) {
@@ -180,10 +185,11 @@ export default function InboxChat() {
         setContacts((prev) => {
           const map = new Map(prev.map((x) => [x.id, x]));
           (Array.isArray(users) ? users : []).forEach((u) => {
-            if (!u?.id || u.id === user?.id) return;
-            map.set(u.id, {
-              id: u.id,
-              name: u.name || `User ${u.id}`,
+            const uid = Number(u?.id);
+            if (!uid || uid === Number(user?.id)) return;
+            map.set(uid, {
+              id: uid,
+              name: u.name || `User ${uid}`,
               role: u.role || 'student',
             });
           });
@@ -248,7 +254,7 @@ export default function InboxChat() {
       ? contacts.filter((c) => c.name.toLowerCase().includes(q))
       : contacts;
 
-    const ids = list.map((c) => c.id);
+    const ids = list.map((c) => Number(c.id)).filter(Boolean);
     if (!ids.length || !socketRef.current) return;
     socketRef.current.emit('chat:users:presence:get', { user_ids: ids });
   }, [contacts, search]);

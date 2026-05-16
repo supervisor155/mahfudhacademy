@@ -43,7 +43,10 @@ export default function Chat() {
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
 
-  const onlineSet = useMemo(() => new Set(onlineUsers.map((u) => u.id)), [onlineUsers]);
+  const onlineSet = useMemo(
+    () => new Set(onlineUsers.map((u) => Number(u.id)).filter(Boolean)),
+    [onlineUsers]
+  );
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -134,7 +137,12 @@ export default function Chat() {
 
     socket.on('chat:online', (payload) => {
       const users = payload?.users || [];
-      setOnlineUsers(Array.isArray(users) ? users : []);
+      setOnlineUsers(
+        (Array.isArray(users) ? users : []).map((u) => ({
+          ...u,
+          id: Number(u.id),
+        }))
+      );
     });
 
     socket.on('chat:error', (payload) => {
@@ -207,7 +215,7 @@ export default function Chat() {
               ) : (
                 <div className="space-y-1.5">
                   {orderedMembers.map((m) => {
-                    const uid = m.user_id || m.id;
+                    const uid = Number(m.user_id || m.id);
                     const name = m.name || m.user_name || `User ${uid}`;
                     const isOnline = onlineSet.has(uid);
                     return (

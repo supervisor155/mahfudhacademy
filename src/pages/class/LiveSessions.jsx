@@ -253,7 +253,9 @@ export default function LiveSessions() {
     if (!activeSessionIdRef.current || String(payload?.session_id) !== String(activeSessionIdRef.current)) return;
 
     const peerId = Number(payload?.from_user_id);
+    const targetId = payload?.to_user_id ? Number(payload.to_user_id) : null;
     const signal = payload?.signal;
+    if (targetId && targetId !== Number(user?.id)) return;
     if (!peerId || peerId === user?.id || !signal) return;
 
     try {
