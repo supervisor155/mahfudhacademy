@@ -9,7 +9,10 @@ const SOCKET_BASE_URL = String(
 export function createAppSocket(token) {
   return io(SOCKET_BASE_URL, {
     auth: { token },
-    transports: ['websocket', 'polling'],
+    // Start with polling for reliability on restrictive/mobile networks, then upgrade to websocket.
+    transports: ['polling', 'websocket'],
+    upgrade: true,
+    tryAllTransports: true,
     timeout: 20000,
     reconnection: true,
     reconnectionAttempts: 15,
