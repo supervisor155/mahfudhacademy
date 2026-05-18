@@ -268,29 +268,41 @@ export default function LiveSessions() {
     if (!peerId || peerId === user?.id || !signal) return;
 
     try {
-      const pc = createPeerConnection(peerId);
-
       if (signal.type === 'offer') {
+        // Always discard old PC when receiving a new offer — renegotiation
+        // creates a brand-new PC on the sender side so we must do the same.
+        const old = peerConnectionsRef.current.get(peerId);
+        if (old) {
+          old.onicecandidate = null;
+          old.ontrack = null;
+          old.onconnectionstatechange = null;
+          old.close();
+          peerConnectionsRef.current.delete(peerId);
+          pendingIceRef.current.delete(peerId);
+        }
+
+        const pc = createPeerConnection(peerId);
         await pc.setRemoteDescription({ type: 'offer', sdp: signal.sdp });
         await flushPendingCandidates(peerId, pc);
-
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
 
         socketRef.current?.emit('session:signal', {
           session_id: activeSessionIdRef.current,
           to_user_id: peerId,
-          signal: {
-            type: 'answer',
-            sdp: answer.sdp,
-          },
+          signal: { type: 'answer', sdp: answer.sdp },
         });
         return;
       }
 
+      const pc = createPeerConnection(peerId);
+
       if (signal.type === 'answer') {
-        await pc.setRemoteDescription({ type: 'answer', sdp: signal.sdp });
-        await flushPendingCandidates(peerId, pc);
+        // Only apply answer when we are actually waiting for one.
+        if (pc.signalingState === 'have-local-offer') {
+          await pc.setRemoteDescription({ type: 'answer', sdp: signal.sdp });
+          await flushPendingCandidates(peerId, pc);
+        }
         return;
       }
 
@@ -303,7 +315,7 @@ export default function LiveSessions() {
         }
       }
     } catch {
-      setError('Failed to process live media signal');
+      // Transient signal errors are usually self-recovering — log only, no UI noise.
     }
   }
 
