@@ -177,11 +177,18 @@ export default function LiveSessions() {
       }
     });
 
+    // Pass the source stream so the receiver always gets event.streams[0]
+    // and never has to reuse a stale MediaStream with ended tracks.
+    const srcStream = screenStreamRef.current || camStreamRef.current;
     outboundTracks.forEach((track) => {
       try {
-        pc.addTrack(track);
+        if (srcStream) {
+          pc.addTrack(track, srcStream);
+        } else {
+          pc.addTrack(track);
+        }
       } catch {
-        // Track may already be attached during renegotiation.
+        // no-op
       }
     });
 
@@ -280,6 +287,11 @@ export default function LiveSessions() {
           peerConnectionsRef.current.delete(peerId);
           pendingIceRef.current.delete(peerId);
         }
+        // Clear stale stream so StreamPlayer re-renders with a fresh reference
+        // and doesn't keep displaying ended tracks from the closed PC.
+        remoteStreamsRef.current.delete(peerId);
+        const prevMeta = remoteMetaRef.current.get(peerId);
+        if (prevMeta) remoteMetaRef.current.set(peerId, { ...prevMeta, stream: null });
 
         const pc = createPeerConnection(peerId);
         await pc.setRemoteDescription({ type: 'offer', sdp: signal.sdp });
