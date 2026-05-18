@@ -15,6 +15,19 @@ function formatTime(iso) {
   return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
 }
 
+function buildIceServers() {
+  const servers = [
+    { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
+  ];
+  const url = import.meta.env.VITE_TURN_URL;
+  const username = import.meta.env.VITE_TURN_USERNAME;
+  const credential = import.meta.env.VITE_TURN_CREDENTIAL;
+  if (url && username && credential) {
+    servers.push({ urls: url, username, credential });
+  }
+  return servers;
+}
+
 function StreamPlayer({ stream, muted = false, className }) {
   const videoRef = useRef(null);
 
@@ -186,11 +199,7 @@ export default function LiveSessions() {
       return peerConnectionsRef.current.get(peerId);
     }
 
-    const pc = new RTCPeerConnection({
-      iceServers: [
-        { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
-      ],
-    });
+    const pc = new RTCPeerConnection({ iceServers: buildIceServers() });
 
     attachTracksToPeer(pc);
 
@@ -545,7 +554,6 @@ export default function LiveSessions() {
     }
   };
 
-  // Screen sharing
   async function startScreenShare() {
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -553,7 +561,9 @@ export default function LiveSessions() {
         audio: false,
       });
       stream.getVideoTracks()[0].onended = () => stopScreenShare();
+      screenStreamRef.current = stream;
       setScreenStream(stream);
+      await renegotiateAllPeers();
     } catch (err) {
       if (err.name !== 'NotAllowedError') {
         setError('Screen sharing failed. Please allow access.');
@@ -563,24 +573,30 @@ export default function LiveSessions() {
 
   function stopScreenShare() {
     screenStream?.getTracks().forEach((t) => t.stop());
+    screenStreamRef.current = null;
     setScreenStream(null);
     if (screenVideoRef.current) screenVideoRef.current.srcObject = null;
+    renegotiateAllPeers();
   }
 
   async function toggleCamera() {
     if (camOn) {
       camStream?.getTracks().forEach((t) => t.stop());
+      camStreamRef.current = null;
       setCamStream(null);
       if (camVideoRef.current) camVideoRef.current.srcObject = null;
       setCamOn(false);
+      await renegotiateAllPeers();
     } else {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: micOn,
         });
+        camStreamRef.current = stream;
         setCamStream(stream);
         setCamOn(true);
+        await renegotiateAllPeers();
       } catch {
         setError('Camera access denied.');
       }

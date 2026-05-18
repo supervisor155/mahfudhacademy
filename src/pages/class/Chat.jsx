@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   FaCircle,
   FaPaperPlane,
@@ -31,6 +31,7 @@ function formatTime(ts) {
 
 export default function Chat() {
   const { classId } = useParams();
+  const navigate = useNavigate();
   const { user, token } = useAuth();
 
   const [messages, setMessages] = useState([]);
@@ -218,10 +219,11 @@ export default function Chat() {
                     const uid = Number(m.user_id || m.id);
                     const name = m.name || m.user_name || `User ${uid}`;
                     const isOnline = onlineSet.has(uid);
+                    if (uid === user?.id) return null;
                     return (
                       <div
                         key={uid}
-                        className="flex items-center gap-3 rounded-2xl px-2.5 py-2 transition hover:bg-white/5"
+                        className="group flex items-center gap-3 rounded-2xl px-2.5 py-2 transition hover:bg-white/5"
                       >
                         <div className="relative">
                           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1f2a3b] text-xs font-bold">
@@ -229,11 +231,27 @@ export default function Chat() {
                           </div>
                           <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border border-[#101723] ${isOnline ? 'bg-green-400' : 'bg-slate-500'}`} />
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-semibold">{name}</p>
                           <p className={`text-[11px] ${isOnline ? 'text-green-300' : 'text-white/40'}`}>
                             {isOnline ? 'Online' : 'Offline'}
                           </p>
+                        </div>
+                        <div className="hidden items-center gap-1 group-hover:flex">
+                          <button
+                            onClick={() => navigate(`/chat?call=${uid}&type=audio`)}
+                            title="Audio call"
+                            className="rounded-full p-1.5 text-white/50 transition hover:bg-green-600/20 hover:text-green-400"
+                          >
+                            <FaPhoneAlt className="text-[10px]" />
+                          </button>
+                          <button
+                            onClick={() => navigate(`/chat?call=${uid}&type=video`)}
+                            title="Video call"
+                            className="rounded-full p-1.5 text-white/50 transition hover:bg-blue-600/20 hover:text-blue-400"
+                          >
+                            <FaVideo className="text-[10px]" />
+                          </button>
                         </div>
                       </div>
                     );
