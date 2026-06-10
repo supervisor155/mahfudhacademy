@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { createAppSocket } from '../services/socket';
+import { getSocket } from '../services/socket';
 import { useNavigate } from 'react-router-dom';
 
 /**
@@ -15,39 +15,44 @@ export default function useIncomingCall() {
   useEffect(() => {
     if (!token || !user) return;
 
-    const socket = createAppSocket(token);
+    const socket = getSocket(token);
+    if (!socket) return;
 
-    // Listen for incoming calls
-    socket.on('call:incoming', (callData) => {
+    const handleIncoming = (callData) => {
       console.log('📞 Incoming call:', callData);
       setIncomingCall(callData);
-    });
+    };
 
-    // Call was accepted by us (in another tab/device)
-    socket.on('call:accepted', (data) => {
+    const handleAccepted = (data) => {
       if (data.acceptedBy === user.id) {
         setIncomingCall(null);
       }
-    });
+    };
 
-    // Call was rejected or ended
-    socket.on('call:rejected', () => {
+    const handleEnded = () => {
       setIncomingCall(null);
-    });
+    };
 
-    socket.on('call:ended', () => {
-      setIncomingCall(null);
-    });
+    // Listen for incoming calls
+    socket.on('call:incoming', handleIncoming);
+    socket.on('call:accepted', handleAccepted);
+    socket.on('call:rejected', handleEnded);
+    socket.on('call:ended', handleEnded);
+    socket.on('call:missed', handleEnded);
 
-    socket.on('call:missed', () => {
-      setIncomingCall(null);
-    });
-
-    return () => socket.disconnect();
+    return () => {
+      // Clean up listeners only, don't disconnect socket
+      socket.off('call:incoming', handleIncoming);
+      socket.off('call:accepted', handleAccepted);
+      socket.off('call:rejected', handleEnded);
+      socket.off('call:ended', handleEnded);
+      socket.off('call:missed', handleEnded);
+    };
   }, [token, user]);
 
   const acceptCall = (callData) => {
-    const socket = createAppSocket(token);
+    const socket = getSocket(token);
+    if (!socket) return;
 
     // Emit accept event
     socket.emit('call:accept', {
@@ -64,7 +69,8 @@ export default function useIncomingCall() {
   };
 
   const rejectCall = (callData) => {
-    const socket = createAppSocket(token);
+    const socket = getSocket(token);
+    if (!socket) return;
 
     // Emit reject event
     socket.emit('call:reject', {
@@ -79,7 +85,8 @@ export default function useIncomingCall() {
   const timeoutCall = () => {
     if (!incomingCall) return;
 
-    const socket = createAppSocket(token);
+    const socket = getSocket(token);
+    if (!socket) return;
 
     // Emit missed event
     socket.emit('call:missed', {

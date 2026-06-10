@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { createAppSocket } from '../services/socket';
+import { getSocket } from '../services/socket';
 
 /**
  * Hook to manage toast notifications and browser notifications
@@ -80,10 +80,10 @@ export default function useNotifications() {
   useEffect(() => {
     if (!token || !user) return;
 
-    const socket = createAppSocket(token);
+    const socket = getSocket(token);
+    if (!socket) return;
 
-    // New message notification
-    socket.on('message', (data) => {
+    const handleMessage = (data) => {
       if (data.sender_id !== user.id) {
         addToast({
           type: 'message',
@@ -92,40 +92,36 @@ export default function useNotifications() {
           duration: 5000,
         });
       }
-    });
+    };
 
-    // New announcement
-    socket.on('announcement:new', (data) => {
+    const handleAnnouncement = (data) => {
       addToast({
         type: 'notification',
         title: 'New Announcement',
         message: data.title || data.content?.slice(0, 80),
         duration: 8000,
       });
-    });
+    };
 
-    // Assignment created
-    socket.on('assignment:created', (data) => {
+    const handleAssignment = (data) => {
       addToast({
         type: 'assignment',
         title: 'New Assignment',
         message: data.title,
         duration: 8000,
       });
-    });
+    };
 
-    // Video uploaded
-    socket.on('video:uploaded', (data) => {
+    const handleVideo = (data) => {
       addToast({
         type: 'video',
         title: 'New Video',
         message: data.title,
         duration: 6000,
       });
-    });
+    };
 
-    // Class starting soon
-    socket.on('session:starting-soon', (data) => {
+    const handleSessionStart = (data) => {
       addToast({
         type: 'warning',
         title: 'Live Session Starting',
@@ -139,10 +135,9 @@ export default function useNotifications() {
           }
         }
       });
-    });
+    };
 
-    // Someone joined class
-    socket.on('class:user-online', (data) => {
+    const handleUserOnline = (data) => {
       if (data.user_id !== user.id) {
         addToast({
           type: 'info',
@@ -151,9 +146,24 @@ export default function useNotifications() {
           duration: 4000,
         });
       }
-    });
+    };
 
-    return () => socket.disconnect();
+    socket.on('message', handleMessage);
+    socket.on('announcement:new', handleAnnouncement);
+    socket.on('assignment:created', handleAssignment);
+    socket.on('video:uploaded', handleVideo);
+    socket.on('session:starting-soon', handleSessionStart);
+    socket.on('class:user-online', handleUserOnline);
+
+    return () => {
+      // Clean up listeners only, don't disconnect socket
+      socket.off('message', handleMessage);
+      socket.off('announcement:new', handleAnnouncement);
+      socket.off('assignment:created', handleAssignment);
+      socket.off('video:uploaded', handleVideo);
+      socket.off('session:starting-soon', handleSessionStart);
+      socket.off('class:user-online', handleUserOnline);
+    };
   }, [token, user, addToast]);
 
   // Auto-request permission on mount
