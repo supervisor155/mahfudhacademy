@@ -25,6 +25,7 @@ const ReelsDemo = lazy(() => import("../pages/reels/ReelsDemo"));
 const MushafViewer = lazy(() =>
   import("../pages/mushaf/MushafViewer").then((m) => ({ default: m.MushafViewer }))
 );
+const LiveSessionRoom = lazy(() => import("../components/live/LiveSessionRoom"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 
 function PageLoader() {
@@ -125,6 +126,9 @@ export default function AppRouter() {
         <Route path="/reels" element={<ProtectedRoute><ReelsPage /></ProtectedRoute>} />
         <Route path="/reels-demo" element={<ProtectedRoute><ReelsDemo /></ProtectedRoute>} />
         <Route path="/chat" element={<ProtectedRoute><InboxChat /></ProtectedRoute>} />
+
+        {/* Live Session Room */}
+        <Route path="/session/:sessionId" element={<ProtectedRoute><LiveSessionRoom /></ProtectedRoute>} />
 
         {/* Muṣḥaf Viewer — open to all, no login required */}
         <Route path="/mushaf" element={<MushafViewer />} />

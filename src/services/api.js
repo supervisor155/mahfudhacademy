@@ -97,6 +97,18 @@ API.interceptors.response.use(
 
     const status = error.response?.status;
     const isAuthRoute = String(cfg.url || '').includes('/api/auth/login') || String(cfg.url || '').includes('/api/auth/register') || String(cfg.url || '').includes('/api/auth/refresh');
+
+    // Enhanced error logging for production debugging
+    if (status >= 500 || !status) {
+      console.error('🚨 API Error:', {
+        url: cfg.url,
+        method: cfg.method,
+        status: status || 'Network Error',
+        message: error.message,
+        response: error.response?.data,
+      });
+    }
+
     if (status === 401 && !cfg.__isRetryAfterRefresh && !isAuthRoute) {
       cfg.__isRetryAfterRefresh = true;
       try {
@@ -104,11 +116,16 @@ API.interceptors.response.use(
         cfg.headers = cfg.headers || {};
         cfg.headers.Authorization = `Bearer ${nextAccess}`;
         return API(cfg);
-      } catch {
+      } catch (refreshError) {
+        console.warn('⚠️ Token refresh failed, redirecting to login');
         localStorage.removeItem(ACCESS_TOKEN_KEY);
         localStorage.removeItem(REFRESH_TOKEN_KEY);
         sessionStorage.removeItem(ACCESS_TOKEN_KEY);
         sessionStorage.removeItem(REFRESH_TOKEN_KEY);
+        // Redirect to login if not already there
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login';
+        }
       }
     }
 
@@ -119,6 +136,7 @@ API.interceptors.response.use(
 
     cfg.__retryCount += 1;
     const backoff = 400 * Math.pow(2, cfg.__retryCount - 1);
+    console.log(`🔄 Retrying request (${cfg.__retryCount}/${MAX_RETRIES}) after ${backoff}ms:`, cfg.url);
     await wait(backoff);
     return API(cfg);
   }

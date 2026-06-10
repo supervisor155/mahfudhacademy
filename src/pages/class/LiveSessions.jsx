@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { createAppSocket } from '../../services/socket';
 import {
   FaClock, FaPlus, FaTimes, FaDesktop, FaStopCircle,
   FaVideo, FaVideoSlash, FaMicrophone, FaMicrophoneSlash,
-  FaUsers, FaCircle, FaComments, FaPaperPlane,
+  FaUsers, FaCircle, FaComments, FaPaperPlane, FaPlayCircle,
 } from 'react-icons/fa';
 
 function formatTime(iso) {
