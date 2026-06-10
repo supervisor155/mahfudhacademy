@@ -51,18 +51,28 @@ export default function useIncomingCall() {
   }, [token, user]);
 
   const acceptCall = (callData) => {
+    console.log('✅ Accepting call:', callData);
+
     const socket = getSocket(token);
-    if (!socket) return;
+    if (!socket) {
+      console.error('❌ No socket connection');
+      return;
+    }
 
     // Emit accept event
     socket.emit('call:accept', {
       callId: callData.callId,
       callerId: callData.callerId,
+      callType: callData.callType,
     });
 
-    // Navigate to session
+    // Navigate to session with call type
     if (callData.sessionId) {
-      navigate(`/session/${callData.sessionId}`);
+      const url = `/session/${callData.sessionId}?type=${callData.callType || 'video'}`;
+      console.log('🔄 Navigating to:', url);
+      navigate(url);
+    } else {
+      console.error('❌ No sessionId in call data:', callData);
     }
 
     setIncomingCall(null);

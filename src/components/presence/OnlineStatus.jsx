@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { createAppSocket } from '../../services/socket';
+import { getSocket } from '../../services/socket';
 
 /**
  * Online Status Indicator - Shows green dot for online users
  * Usage: <OnlineStatus userId={123} />
+ * Optimized: Uses singleton socket, instant updates
  */
 export default function OnlineStatus({ userId, showLabel = false, size = 'sm' }) {
   const [isOnline, setIsOnline] = useState(false);
@@ -13,29 +14,38 @@ export default function OnlineStatus({ userId, showLabel = false, size = 'sm' })
   useEffect(() => {
     if (!token || !userId) return;
 
-    const socket = createAppSocket(token);
+    const socket = getSocket(token);
+    if (!socket) return;
 
-    // Listen for this user coming online
-    socket.on('user:online', (data) => {
+    // Instant update handlers
+    const handleOnline = (data) => {
       if (data.user_id === userId) {
         setIsOnline(true);
       }
-    });
+    };
 
-    // Listen for this user going offline
-    socket.on('user:offline', (data) => {
+    const handleOffline = (data) => {
       if (data.user_id === userId) {
         setIsOnline(false);
       }
-    });
+    };
 
-    // Get initial online users list
-    socket.on('presence:online-users', (data) => {
+    const handleOnlineList = (data) => {
       const online = data.users?.some(u => u.user_id === userId);
       setIsOnline(online);
-    });
+    };
 
-    return () => socket.disconnect();
+    // Register listeners
+    socket.on('user:online', handleOnline);
+    socket.on('user:offline', handleOffline);
+    socket.on('presence:online-users', handleOnlineList);
+
+    return () => {
+      // Clean up listeners only
+      socket.off('user:online', handleOnline);
+      socket.off('user:offline', handleOffline);
+      socket.off('presence:online-users', handleOnlineList);
+    };
   }, [userId, token]);
 
   const sizeClasses = {
