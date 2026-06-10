@@ -14,6 +14,11 @@ function getApiOrigin() {
 function sanitizeRawUrl(rawUrl) {
   const value = decodeURIComponent(String(rawUrl || '')).trim();
 
+  // Don't touch Supabase URLs - they're already correct
+  if (value.includes('supabase.co')) {
+    return value;
+  }
+
   // Recover rows saved with placeholder text before the real uploads path.
   const uploadsIndex = value.indexOf('/uploads/');
   if (uploadsIndex >= 0) {
