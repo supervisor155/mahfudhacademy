@@ -35,6 +35,11 @@ export function resolveMediaUrl(rawUrl) {
   const currentProtocol = typeof window !== "undefined" ? window.location.protocol : "";
   const sanitized = sanitizeRawUrl(rawUrl);
 
+  // If it's already a Supabase URL, return it as-is (don't modify)
+  if (sanitized.includes('supabase.co')) {
+    return sanitized;
+  }
+
   // Relative paths (e.g. /uploads/abc.mp4)
   if (sanitized.startsWith("/")) {
     return `${apiOrigin}${sanitized}`;
