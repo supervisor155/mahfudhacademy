@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import GlobalProviders from "../components/providers/GlobalProviders";
 const Login = lazy(() => import("../pages/auth/Login"));
 const Register = lazy(() => import("../pages/auth/Register"));
 const Welcome = lazy(() => import("../pages/Welcome"));
@@ -90,8 +91,9 @@ export default function AppRouter() {
 
   return (
     <BrowserRouter>
-      <Suspense fallback={<PageLoader />}>
-      <Routes>
+      <GlobalProviders>
+        <Suspense fallback={<PageLoader />}>
+        <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
@@ -146,6 +148,7 @@ export default function AppRouter() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       </Suspense>
+      </GlobalProviders>
     </BrowserRouter>
   );
 }
