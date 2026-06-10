@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import OnlineStatus from '../../components/presence/OnlineStatus';
 import {
   FaUsers, FaUserGraduate, FaChalkboardTeacher,
   FaTimes, FaTrash, FaSearch, FaCrown,
@@ -373,6 +374,7 @@ export default function Members() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
+                        <OnlineStatus userId={m.id} size="sm" />
                         <p className="font-semibold text-slate-900">{m.name}</p>
                         {m.role === 'owner' && (
                           <span className="flex items-center gap-1 rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-semibold text-yellow-700">
@@ -407,7 +409,10 @@ export default function Members() {
                       {avatarLetter(m.name)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-slate-900">{m.name}</p>
+                      <div className="flex items-center gap-2">
+                        <OnlineStatus userId={m.id} size="sm" />
+                        <p className="font-semibold text-slate-900">{m.name}</p>
+                      </div>
                       <p className="text-xs text-slate-400 truncate">{m.email}</p>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">

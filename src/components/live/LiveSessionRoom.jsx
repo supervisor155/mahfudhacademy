@@ -66,11 +66,24 @@ export default function LiveSessionRoom() {
     const getMedia = async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 1280, height: 720 },
-          audio: { echoCancellation: true, noiseSuppression: true }
+          video: {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            frameRate: { ideal: 30 }
+          },
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            sampleRate: 48000,
+            channelCount: 1
+          }
         });
         setLocalStream(stream);
-        if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+          localVideoRef.current.muted = true; // Prevent echo feedback
+        }
       } catch (err) {
         console.error('❌ Media access error:', err);
         setError('Camera/microphone access denied. Please allow permissions.');
@@ -183,18 +196,53 @@ export default function LiveSessionRoom() {
 
     // Handle remote stream
     pc.ontrack = (event) => {
-      console.log('📹 Received remote track from:', peerId);
-      setRemoteStreams(prev => ({
-        ...prev,
-        [peerId]: event.streams[0]
-      }));
+      console.log('📹 Received remote track from:', peerId, event.track.kind);
+      const stream = event.streams[0];
+
+      setRemoteStreams(prev => {
+        const existing = prev[peerId];
+        // Merge tracks if stream already exists
+        if (existing) {
+          event.track.addEventListener('ended', () => {
+            console.log('Track ended:', event.track.kind);
+          });
+          return prev;
+        }
+        return {
+          ...prev,
+          [peerId]: stream
+        };
+      });
     };
 
+    // Connection state monitoring with auto-reconnect
     pc.oniceconnectionstatechange = () => {
       console.log(`ICE state [${peerId}]:`, pc.iceConnectionState);
-      if (pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'failed') {
-        console.warn('⚠️ Connection lost with peer:', peerId);
+
+      if (pc.iceConnectionState === 'failed') {
+        console.warn('⚠️ Connection failed with peer:', peerId);
+        // Attempt ICE restart
+        pc.restartIce();
       }
+
+      if (pc.iceConnectionState === 'disconnected') {
+        console.warn('⚠️ Connection disconnected with peer:', peerId);
+        // Wait a bit before attempting restart
+        setTimeout(() => {
+          if (pc.iceConnectionState === 'disconnected') {
+            console.log('Attempting ICE restart for:', peerId);
+            pc.restartIce();
+          }
+        }, 3000);
+      }
+
+      if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
+        console.log('✅ Connection established with peer:', peerId);
+      }
+    };
+
+    pc.onconnectionstatechange = () => {
+      console.log(`Connection state [${peerId}]:`, pc.connectionState);
     };
 
     peerConnectionsRef.current[peerId] = pc;
