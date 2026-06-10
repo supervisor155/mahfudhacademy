@@ -53,7 +53,7 @@ export const MushafViewer = () => {
   const [theme, setTheme] = useState('dark');         // 'dark' | 'light' | 'sepia'
   const [fontFamily, setFontFamily] = useState('uthmanic'); // 'uthmanic' | 'naskh' | 'amiri'
 
-  // â”€â”€ Socket setup for mushaf collaboration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Socket setup for mushaf collaboration
   useEffect(() => {
     if (!token || !classId) return;
     const socket = createAppSocket(token);
@@ -135,7 +135,7 @@ export const MushafViewer = () => {
   const currentSurahData = surahs.find((s) => s.number === currentSurah);
   const selectedAyahNote = selectedAyah ? getAyahNote(selectedAyah.number) : null;
 
-  // â”€â”€ Page nav state lifted from AyahDisplay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Page navigation state from AyahDisplay
   const pageNavRef = useRef({ prev: null, next: null, canPrev: false, canNext: false, togglePlay: null });
   const [pageNavState, setPageNavState] = useState({ canPrev: false, canNext: false, isPlaying: false, isLoading: false, pageNumber: null, juz: null, hizb: null });
   const handlePaginationChange = useCallback(({ prevPage, nextPage, canPrevPage, canNextPage, isPlaying, isLoading, togglePlay, pageNumber, juz, hizb }) => {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { createAppSocket } from '../../services/socket';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
@@ -12,7 +12,12 @@ import {
 export default function LiveSessionRoom() {
   const { sessionId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, token } = useAuth();
+
+  // Get call type from URL (audio or video)
+  const callType = searchParams.get('type') || 'video';
+  const isAudioOnly = callType === 'audio';
 
   const [socket, setSocket] = useState(null);
   const [roomId, setRoomId] = useState(null);
@@ -21,11 +26,12 @@ export default function LiveSessionRoom() {
   const [localStream, setLocalStream] = useState(null);
   const [remoteStreams, setRemoteStreams] = useState({});
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
-  const [isVideoEnabled, setIsVideoEnabled] = useState(true);
+  const [isVideoEnabled, setIsVideoEnabled] = useState(!isAudioOnly);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [error, setError] = useState('');
+  const [connectionState, setConnectionState] = useState('connecting');
 
   const localVideoRef = useRef(null);
   const peerConnectionsRef = useRef({});
@@ -65,28 +71,35 @@ export default function LiveSessionRoom() {
   useEffect(() => {
     const getMedia = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            frameRate: { ideal: 30 }
-          },
+        setConnectionState('requesting-media');
+
+        const constraints = {
           audio: {
             echoCancellation: true,
             noiseSuppression: true,
             autoGainControl: true,
             sampleRate: 48000,
             channelCount: 1
+          },
+          video: isAudioOnly ? false : {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            frameRate: { ideal: 30 }
           }
-        });
+        };
+
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
         setLocalStream(stream);
+        setConnectionState('media-ready');
+
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = stream;
           localVideoRef.current.muted = true; // Prevent echo feedback
         }
       } catch (err) {
         console.error('❌ Media access error:', err);
-        setError('Camera/microphone access denied. Please allow permissions.');
+        setError(`${isAudioOnly ? 'Microphone' : 'Camera/microphone'} access denied. Please allow permissions.`);
+        setConnectionState('error');
       }
     };
     getMedia();
@@ -94,7 +107,7 @@ export default function LiveSessionRoom() {
     return () => {
       localStream?.getTracks().forEach(track => track.stop());
     };
-  }, []);
+  }, [isAudioOnly]);
 
   // WebRTC signaling handlers
   useEffect(() => {
@@ -215,18 +228,37 @@ export default function LiveSessionRoom() {
       });
     };
 
+    // ICE gathering state monitoring
+    pc.onicegatheringstatechange = () => {
+      console.log(`ICE gathering [${peerId}]:`, pc.iceGatheringState);
+      if (pc.iceGatheringState === 'complete') {
+        console.log('✅ ICE gathering complete for:', peerId);
+        setConnectionState('connected');
+      }
+    };
+
     // Connection state monitoring with auto-reconnect
     pc.oniceconnectionstatechange = () => {
       console.log(`ICE state [${peerId}]:`, pc.iceConnectionState);
 
+      if (pc.iceConnectionState === 'checking') {
+        setConnectionState('connecting');
+      }
+
       if (pc.iceConnectionState === 'failed') {
         console.warn('⚠️ Connection failed with peer:', peerId);
+        setConnectionState('reconnecting');
         // Attempt ICE restart
-        pc.restartIce();
+        setTimeout(() => {
+          if (pc.iceConnectionState === 'failed') {
+            pc.restartIce();
+          }
+        }, 1000);
       }
 
       if (pc.iceConnectionState === 'disconnected') {
         console.warn('⚠️ Connection disconnected with peer:', peerId);
+        setConnectionState('reconnecting');
         // Wait a bit before attempting restart
         setTimeout(() => {
           if (pc.iceConnectionState === 'disconnected') {
@@ -238,11 +270,18 @@ export default function LiveSessionRoom() {
 
       if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
         console.log('✅ Connection established with peer:', peerId);
+        setConnectionState('connected');
       }
     };
 
     pc.onconnectionstatechange = () => {
       console.log(`Connection state [${peerId}]:`, pc.connectionState);
+
+      if (pc.connectionState === 'connected') {
+        setConnectionState('connected');
+      } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+        setConnectionState('reconnecting');
+      }
     };
 
     peerConnectionsRef.current[peerId] = pc;
@@ -370,6 +409,34 @@ export default function LiveSessionRoom() {
 
   return (
     <div ref={containerRef} className="relative flex h-screen flex-col bg-gray-900">
+      {/* Connection Status Indicator */}
+      {connectionState !== 'connected' && (
+        <div className="absolute top-4 left-1/2 z-50 -translate-x-1/2 transform">
+          <div className={`rounded-full px-4 py-2 text-sm font-semibold shadow-lg ${
+            connectionState === 'requesting-media' ? 'bg-blue-600 text-white' :
+            connectionState === 'connecting' ? 'bg-yellow-600 text-white' :
+            connectionState === 'reconnecting' ? 'bg-orange-600 text-white' :
+            connectionState === 'error' ? 'bg-red-600 text-white' :
+            'bg-gray-700 text-white'
+          }`}>
+            {connectionState === 'requesting-media' && '🎥 Requesting camera access...'}
+            {connectionState === 'media-ready' && '✓ Media ready'}
+            {connectionState === 'connecting' && '⏳ Connecting...'}
+            {connectionState === 'reconnecting' && '🔄 Reconnecting...'}
+            {connectionState === 'error' && '❌ Connection error'}
+          </div>
+        </div>
+      )}
+
+      {/* Audio-Only Mode Indicator */}
+      {isAudioOnly && (
+        <div className="absolute top-4 right-4 z-50">
+          <div className="rounded-full bg-[#2d5a56] px-4 py-2 text-sm font-semibold text-white shadow-lg">
+            🎧 Audio-Only Call
+          </div>
+        </div>
+      )}
+
       {/* Video Grid */}
       <div className="flex-1 p-4">
         <div className={`grid h-full gap-4 ${
@@ -427,15 +494,17 @@ export default function LiveSessionRoom() {
             {isAudioEnabled ? <FaMicrophone /> : <FaMicrophoneSlash />}
           </button>
 
-          <button
-            onClick={toggleVideo}
-            className={`flex h-12 w-12 items-center justify-center rounded-full transition ${
-              isVideoEnabled ? 'bg-gray-700 hover:bg-gray-600' : 'bg-red-600 hover:bg-red-700'
-            } text-white`}
-            title={isVideoEnabled ? 'Stop Video' : 'Start Video'}
-          >
-            {isVideoEnabled ? <FaVideo /> : <FaVideoSlash />}
-          </button>
+          {!isAudioOnly && (
+            <button
+              onClick={toggleVideo}
+              className={`flex h-12 w-12 items-center justify-center rounded-full transition ${
+                isVideoEnabled ? 'bg-gray-700 hover:bg-gray-600' : 'bg-red-600 hover:bg-red-700'
+              } text-white`}
+              title={isVideoEnabled ? 'Stop Video' : 'Start Video'}
+            >
+              {isVideoEnabled ? <FaVideo /> : <FaVideoSlash />}
+            </button>
+          )}
 
           <button
             onClick={toggleScreenShare}
