@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
-import { createAppSocket } from '../../services/socket';
+import { getSocket } from '../../services/socket';
 import {
   FaClock, FaPlus, FaTimes, FaDesktop, FaStopCircle,
   FaVideo, FaVideoSlash, FaMicrophone, FaMicrophoneSlash,
@@ -345,90 +345,85 @@ export default function LiveSessions() {
   useEffect(() => {
     if (!token) return;
 
-    const socket = createAppSocket(token);
-
+    const socket = getSocket(token);
     socketRef.current = socket;
 
-    socket.on('connect_error', (err) => {
-      setError(err?.message || 'Realtime connection failed');
-    });
-
-    socket.on('session:participants', (payload) => {
+    const onConnectError = (err) => setError(err?.message || 'Realtime connection failed');
+    const onParticipants = (payload) => {
       if (!activeSessionIdRef.current || String(payload?.session_id) !== String(activeSessionIdRef.current)) return;
       const participants = Array.isArray(payload?.participants) ? payload.participants : [];
       participants.forEach((participant) => {
-        if (participant?.id && participant.id !== user?.id) {
-          upsertRemotePeer(participant.id, participant);
-        }
+        if (participant?.id && participant.id !== user?.id) upsertRemotePeer(participant.id, participant);
       });
-    });
-
-    socket.on('session:user_joined', (payload) => {
+    };
+    const onUserJoined = (payload) => {
       if (!activeSessionIdRef.current) return;
       const peer = payload?.user;
       if (!peer?.id || peer.id === user?.id) return;
       upsertRemotePeer(peer.id, peer);
       createOfferForPeer(peer.id, peer);
-    });
-
-    socket.on('session:user_left', (payload) => {
+    };
+    const onUserLeft = (payload) => {
       if (!activeSessionIdRef.current) return;
       const peerId = Number(payload?.user_id);
       if (!peerId) return;
       removePeer(peerId);
-    });
-
-    socket.on('session:signal', handleSessionSignal);
-
-    socket.on('session:chat:message', (payload) => {
+    };
+    const onChatMessage = (payload) => {
       setError('');
       if (!activeSessionIdRef.current || String(payload?.session_id) !== String(activeSessionIdRef.current)) return;
-      setSessionMessages((prev) => [
-        ...prev,
-        {
-          id: `${payload?.from?.id || 'u'}-${payload?.sent_at || Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          from: payload?.from,
-          message: payload?.message,
-          sent_at: payload?.sent_at,
-        },
-      ]);
-    });
-
-    socket.on('session:chat:online', (payload) => {
+      setSessionMessages((prev) => [...prev, {
+        id: `${payload?.from?.id || 'u'}-${payload?.sent_at || Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        from: payload?.from, message: payload?.message, sent_at: payload?.sent_at,
+      }]);
+    };
+    const onChatOnline = (payload) => {
       if (!activeSessionIdRef.current || String(payload?.session_id) !== String(activeSessionIdRef.current)) return;
       const users = payload?.users || [];
       setSessionOnline(Array.isArray(users) ? users : []);
-    });
-
-    socket.on('session:chat:history', (payload) => {
+    };
+    const onChatHistory = (payload) => {
       if (!activeSessionIdRef.current || String(payload?.session_id) !== String(activeSessionIdRef.current)) return;
       const list = payload?.messages || [];
       setSessionMessages(Array.isArray(list) ? list : []);
-    });
-
-    socket.on('session:chat:closed', (payload) => {
+    };
+    const onChatClosed = (payload) => {
       if (!activeSessionIdRef.current || String(payload?.session_id) !== String(activeSessionIdRef.current)) return;
-      setSessionMessages([]);
-      setSessionOnline([]);
-      setActiveSession(null);
+      setSessionMessages([]); setSessionOnline([]); setActiveSession(null);
       setChatClosedNotice('Live chat closed because the session ended.');
-    });
-
-    socket.on('session:ended', (payload) => {
+    };
+    const onSessionEnded = (payload) => {
       if (!activeSessionIdRef.current || String(payload?.session_id) !== String(activeSessionIdRef.current)) return;
-      setSessionMessages([]);
-      setSessionOnline([]);
-      setActiveSession(null);
+      setSessionMessages([]); setSessionOnline([]); setActiveSession(null);
       setChatClosedNotice('Session ended. Temporary live chat was removed.');
-    });
+    };
+    const onChatError = (payload) => setError(payload?.message || 'Live session chat failed');
 
-    socket.on('session:chat:error', (payload) => {
-      setError(payload?.message || 'Live session chat failed');
-    });
+    socket.on('connect_error', onConnectError);
+    socket.on('session:participants', onParticipants);
+    socket.on('session:user_joined', onUserJoined);
+    socket.on('session:user_left', onUserLeft);
+    socket.on('session:signal', handleSessionSignal);
+    socket.on('session:chat:message', onChatMessage);
+    socket.on('session:chat:online', onChatOnline);
+    socket.on('session:chat:history', onChatHistory);
+    socket.on('session:chat:closed', onChatClosed);
+    socket.on('session:ended', onSessionEnded);
+    socket.on('session:chat:error', onChatError);
 
     return () => {
       clearPeerState();
-      socket.disconnect();
+      socket.off('connect_error', onConnectError);
+      socket.off('session:participants', onParticipants);
+      socket.off('session:user_joined', onUserJoined);
+      socket.off('session:user_left', onUserLeft);
+      socket.off('session:signal', handleSessionSignal);
+      socket.off('session:chat:message', onChatMessage);
+      socket.off('session:chat:online', onChatOnline);
+      socket.off('session:chat:history', onChatHistory);
+      socket.off('session:chat:closed', onChatClosed);
+      socket.off('session:ended', onSessionEnded);
+      socket.off('session:chat:error', onChatError);
     };
   }, [token, user?.id]);
 

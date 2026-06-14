@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
-import { createAppSocket } from '../../services/socket';
+import { getSocket } from '../../services/socket';
 import { COVERS } from '../../components/dashboard/ClassCard';
 import {
   FaVideo, FaFilm, FaClock, FaUsers, FaArrowLeft,
@@ -45,16 +45,23 @@ export default function ClassHome() {
   //  Socket: listen for teacher "Raise Mushaf" events 
   useEffect(() => {
     if (!token || !classId) return;
-    const socket = createAppSocket(token);
+    const socket = getSocket(token);
     socketRef.current = socket;
     socket.emit('class:join', { class_id: classId });
-    socket.on('mushaf:raised', (data) => setMushafBanner(data));
-    socket.on('mushaf:lowered', () => setMushafBanner(null));
-    socket.on('live:countdown:scheduled', (payload) => setLiveCountdown(payload));
-    socket.on('live:countdown:cancelled', () => setLiveCountdown(null));
+    const onMushafRaised = (data) => setMushafBanner(data);
+    const onMushafLowered = () => setMushafBanner(null);
+    const onCountdownScheduled = (payload) => setLiveCountdown(payload);
+    const onCountdownCancelled = () => setLiveCountdown(null);
+    socket.on('mushaf:raised', onMushafRaised);
+    socket.on('mushaf:lowered', onMushafLowered);
+    socket.on('live:countdown:scheduled', onCountdownScheduled);
+    socket.on('live:countdown:cancelled', onCountdownCancelled);
     return () => {
       socket.emit('class:leave', { class_id: classId });
-      socket.disconnect();
+      socket.off('mushaf:raised', onMushafRaised);
+      socket.off('mushaf:lowered', onMushafLowered);
+      socket.off('live:countdown:scheduled', onCountdownScheduled);
+      socket.off('live:countdown:cancelled', onCountdownCancelled);
     };
   }, [classId, token]);
 
@@ -636,227 +643,234 @@ export default function ClassHome() {
           {currentSub === 'overview' ? (
             <div className="space-y-5">
 
-              {/* Quick Actions  teacher */}
-              {isTeacher && (
-                <section className={`rounded-[28px] border p-6 shadow-[0_10px_30px_rgba(17,24,39,0.05)] ${card}`}>
-                  <h2 className={`text-base font-bold mb-4 ${textMain}`}>Quick Actions</h2>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-                    {[
-                      { label: 'Post Announcement', icon: <FaBullhorn />, tab: 'announcements', color: dm ? 'bg-[#1a2f2c] text-[#9fd0c4]' : 'bg-[#e7f3ef] text-[#234946]' },
-                      { label: 'Create Assignment', icon: <FaTasks />,    tab: 'assignments',   color: dm ? 'bg-[#1a2338] text-[#7baee8]' : 'bg-[#edf3f8] text-[#3a66b8]' },
-                      { label: 'Upload Video',       icon: <FaVideo />,    tab: 'videos',        color: dm ? 'bg-[#2a1f14] text-[#e8a07a]' : 'bg-[#fff0e7] text-[#c26d32]' },
-                      { label: 'Open Chat',          icon: <FaComments />, tab: 'chat',          color: dm ? 'bg-[#1f263a] text-[#9fb6ff]' : 'bg-[#edf0ff] text-[#3655c9]' },
-                      { label: 'Start Live Session', icon: <FaClock />,    tab: 'live',          color: dm ? 'bg-[#22193a] text-[#b09fe8]' : 'bg-[#f3effd] text-[#7d57b1]' },
-                    ].map((item) => (
-                      <button
-                        key={item.tab}
-                        onClick={() => goTab(item.tab)}
-                        className={`flex flex-col items-center gap-2 rounded-2xl p-4 text-sm font-semibold transition hover:opacity-80 ${item.color}`}
-                      >
-                        <span className="text-2xl">{item.icon}</span>
-                        <span className="text-center leading-tight">{item.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* Quick Actions  student */}
-              {!isTeacher && (
-                <section className={`rounded-[28px] border p-5 shadow-[0_10px_30px_rgba(17,24,39,0.05)] ${card}`}>
-                  <h2 className={`text-sm font-bold uppercase tracking-widest mb-3 ${muted}`}>Quick Access</h2>
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    {[
-                      { label: 'Lessons',       icon: <FaLayerGroup />, tab: 'curriculum',    color: dm ? 'bg-[#1a2f2c] text-[#9fd0c4]' : 'bg-[#e7f3ef] text-[#234946]' },
-                      { label: 'Assignments',   icon: <FaTasks />,      tab: 'assignments',   color: dm ? 'bg-[#1a2338] text-[#7baee8]' : 'bg-[#edf3f8] text-[#3a66b8]' },
-                      { label: 'Chat',          icon: <FaComments />,   tab: 'chat',          color: dm ? 'bg-[#22193a] text-[#b09fe8]' : 'bg-[#f3effd] text-[#7d57b1]' },
-                      { label: 'My Notes',      icon: <FaStickyNote />, tab: 'notes',         color: dm ? 'bg-[#2a2218] text-[#e8d07a]' : 'bg-[#fefce8] text-[#a16207]' },
-                    ].map((item) => (
-                      <button
-                        key={item.tab}
-                        onClick={() => goTab(item.tab)}
-                        className={`flex items-center gap-2 rounded-2xl px-3 py-3 text-sm font-semibold transition hover:opacity-80 ${item.color}`}
-                      >
-                        <span>{item.icon}</span>
-                        <span className="leading-tight">{item.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </section>
-              )}
-
               {/* Stats row */}
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {[
-                  { label: 'Students',    value: classData?.memberCount ?? '', icon: <FaUserGraduate />, tab: 'members',     color: 'text-[#2d5a56]', bg: dm ? 'bg-[#1a2f2c]' : 'bg-[#e7f3ef]' },
-                  { label: 'Assignments', value: upcomingAssignments.length || '', icon: <FaTasks />,   tab: 'assignments',  color: 'text-[#3a66b8]', bg: dm ? 'bg-[#1a2338]' : 'bg-[#edf3f8]' },
-                  { label: 'Videos',      value: videoCount ?? '',              icon: <FaVideo />,       tab: 'videos',       color: 'text-[#c26d32]', bg: dm ? 'bg-[#2a1f14]' : 'bg-[#fff0e7]' },
-                  { label: 'Files',       value: fileCount ?? '',               icon: <FaPaperclip />,   tab: 'files',        color: 'text-[#7d57b1]', bg: dm ? 'bg-[#22193a]' : 'bg-[#f3effd]' },
+                  { label: 'Students',    value: classData?.memberCount ?? '', icon: <FaUserGraduate />, tab: 'members',    accent: dm ? '#9fd0c4' : '#2d5a56', bg: dm ? 'bg-[#1a2f2c]' : 'bg-[#e7f3ef]', text: dm ? 'text-[#9fd0c4]' : 'text-[#234946]' },
+                  { label: 'Assignments', value: upcomingAssignments.length || '', icon: <FaTasks />,   tab: 'assignments', accent: dm ? '#7baee8' : '#3a66b8', bg: dm ? 'bg-[#1a2338]' : 'bg-[#edf3f8]', text: dm ? 'text-[#7baee8]' : 'text-[#3a66b8]' },
+                  { label: 'Videos',      value: videoCount ?? '',              icon: <FaVideo />,       tab: 'videos',      accent: dm ? '#e8a07a' : '#c26d32', bg: dm ? 'bg-[#2a1f14]' : 'bg-[#fff0e7]', text: dm ? 'text-[#e8a07a]' : 'text-[#c26d32]' },
+                  { label: 'Files',       value: fileCount ?? '',               icon: <FaPaperclip />,   tab: 'files',       accent: dm ? '#b09fe8' : '#7d57b1', bg: dm ? 'bg-[#22193a]' : 'bg-[#f3effd]', text: dm ? 'text-[#b09fe8]' : 'text-[#7d57b1]' },
                 ].map((s) => (
                   <button
                     key={s.tab}
                     onClick={() => goTab(s.tab)}
-                    className={`rounded-[22px] border p-5 text-left shadow-[0_6px_20px_rgba(17,24,39,0.04)] transition hover:shadow-[0_10px_28px_rgba(17,24,39,0.09)] hover:-translate-y-0.5 ${card}`}
+                    className={`group rounded-[22px] border p-5 text-left shadow-[0_4px_16px_rgba(17,24,39,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(17,24,39,0.10)] ${card}`}
                   >
-                    <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl text-lg ${s.bg} ${s.color}`}>
+                    <div className={`mb-3 flex h-11 w-11 items-center justify-center rounded-2xl text-lg ${s.bg} ${s.text}`}>
                       {s.icon}
                     </div>
-                    <p className={`text-2xl font-bold ${textMain}`}>
+                    <p className={`text-3xl font-extrabold tabular-nums ${textMain}`}>
                       {overviewLoading && s.value === '' ? (
-                        <span className={`inline-block h-6 w-8 animate-pulse rounded ${dm ? 'bg-[#1f2a34]' : 'bg-slate-200'}`} />
-                      ) : s.value}
+                        <span className={`inline-block h-7 w-10 animate-pulse rounded-lg ${dm ? 'bg-[#1f2a34]' : 'bg-slate-200'}`} />
+                      ) : s.value !== '' ? s.value : <span className={`inline-block h-7 w-10 animate-pulse rounded-lg ${dm ? 'bg-[#1f2a34]' : 'bg-slate-200'}`} />}
                     </p>
-                    <p className={`text-xs mt-0.5 ${muted}`}>{s.label}</p>
+                    <p className={`mt-1 text-xs font-semibold uppercase tracking-wider ${muted}`}>{s.label}</p>
                   </button>
                 ))}
               </div>
 
-              {/* Recent Activity */}
-              <section className={`rounded-[28px] border p-6 shadow-[0_10px_30px_rgba(17,24,39,0.05)] ${card}`}>
-                <div className="mb-4 flex items-center justify-between">
-                  <h2 className={`text-base font-bold flex items-center gap-2 ${textMain}`}>
-                    <FaCheckCircle className="text-[#2d5a56]" /> Recent Activity
-                  </h2>
-                  <span className={`text-xs font-semibold ${muted}`}>Latest updates</span>
+              {/* Quick Actions */}
+              <section className={`rounded-[28px] border p-5 shadow-[0_6px_24px_rgba(17,24,39,0.05)] ${card}`}>
+                <h2 className={`mb-3 text-xs font-bold uppercase tracking-widest ${muted}`}>
+                  {isTeacher ? 'Quick Actions' : 'Quick Access'}
+                </h2>
+                <div className={`grid gap-2 ${isTeacher ? 'grid-cols-2 sm:grid-cols-5' : 'grid-cols-2 sm:grid-cols-4'}`}>
+                  {isTeacher ? [
+                    { label: 'Post Announcement', icon: <FaBullhorn />, tab: 'announcements', bg: dm ? 'bg-[#1a2f2c] text-[#9fd0c4]' : 'bg-[#e7f3ef] text-[#234946]' },
+                    { label: 'Create Assignment', icon: <FaTasks />,    tab: 'assignments',   bg: dm ? 'bg-[#1a2338] text-[#7baee8]' : 'bg-[#edf3f8] text-[#3a66b8]' },
+                    { label: 'Upload Video',       icon: <FaVideo />,    tab: 'videos',        bg: dm ? 'bg-[#2a1f14] text-[#e8a07a]' : 'bg-[#fff0e7] text-[#c26d32]' },
+                    { label: 'Class Chat',         icon: <FaComments />, tab: 'chat',          bg: dm ? 'bg-[#1f263a] text-[#9fb6ff]' : 'bg-[#edf0ff] text-[#3655c9]' },
+                    { label: 'Start Live',         icon: <FaClock />,    tab: 'live',          bg: dm ? 'bg-[#22193a] text-[#b09fe8]' : 'bg-[#f3effd] text-[#7d57b1]' },
+                  ] : [
+                    { label: 'Lessons',     icon: <FaLayerGroup />, tab: 'curriculum',  bg: dm ? 'bg-[#1a2f2c] text-[#9fd0c4]' : 'bg-[#e7f3ef] text-[#234946]' },
+                    { label: 'Assignments', icon: <FaTasks />,      tab: 'assignments', bg: dm ? 'bg-[#1a2338] text-[#7baee8]' : 'bg-[#edf3f8] text-[#3a66b8]' },
+                    { label: 'Class Chat',  icon: <FaComments />,   tab: 'chat',        bg: dm ? 'bg-[#22193a] text-[#b09fe8]' : 'bg-[#f3effd] text-[#7d57b1]' },
+                    { label: 'My Notes',    icon: <FaStickyNote />, tab: 'notes',       bg: dm ? 'bg-[#2a2218] text-[#e8d07a]' : 'bg-[#fefce8] text-[#a16207]' },
+                  ].map((item) => (
+                    <button
+                      key={item.tab}
+                      onClick={() => goTab(item.tab)}
+                      className={`flex items-center gap-2.5 rounded-2xl px-4 py-3 text-sm font-semibold transition hover:opacity-80 active:scale-95 ${item.bg}`}
+                    >
+                      <span className="shrink-0 text-lg">{item.icon}</span>
+                      <span className="leading-tight">{item.label}</span>
+                    </button>
+                  ))}
                 </div>
-                {overviewLoading ? (
-                  <div className="flex justify-center py-4">
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#2d5a56] border-t-transparent" />
-                  </div>
-                ) : recentActivity.length === 0 ? (
-                  <p className={`text-sm italic ${muted}`}>No recent activity yet.</p>
-                ) : (
-                  <div className="space-y-2.5">
-                    {recentActivity.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => goTab(item.tab)}
-                        className={`flex w-full items-start gap-3 rounded-2xl border px-3.5 py-3 text-left transition hover:opacity-90 ${dm ? 'border-[#1f2a34] bg-[#1a2330]' : 'border-[#edf0ed] bg-[#f8faf8]'}`}
-                      >
-                        <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${item.iconBg}`}>
-                          {item.icon}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className={`truncate text-sm font-semibold ${textMain}`}>{item.title}</p>
-                          <p className={`mt-0.5 text-xs ${muted}`}>{item.subtitle}</p>
-                        </div>
-                        <span className={`shrink-0 text-[10px] font-semibold ${muted}`}>
-                          {item.dateRaw ? new Date(item.dateRaw).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                )}
               </section>
 
-              {/* Recent Announcements */}
-              <section className={`rounded-[28px] border p-6 shadow-[0_10px_30px_rgba(17,24,39,0.05)] ${card}`}>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className={`text-base font-bold flex items-center gap-2 ${textMain}`}>
-                    <FaBullhorn className="text-[#2d5a56]" /> Announcements
-                  </h2>
-                  <button
-                    onClick={() => goTab('announcements')}
-                    className="flex items-center gap-1 text-xs font-semibold text-[#2d5a56] hover:underline"
-                  >
-                    View all <FaChevronRight className="text-[10px]" />
-                  </button>
-                </div>
-                {overviewLoading ? (
-                  <div className="flex justify-center py-4">
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#2d5a56] border-t-transparent" />
-                  </div>
-                ) : recentAnnouncements.length === 0 ? (
-                  <p className={`text-sm italic ${muted}`}>
-                    {isTeacher ? 'No announcements yet. Post your first one.' : 'No announcements from your teacher yet.'}
-                  </p>
-                ) : (
-                  <div className="space-y-2">
-                    {recentAnnouncements.map((ann) => (
-                      <div
-                        key={ann.id}
-                        className={`flex items-start gap-3 rounded-2xl px-4 py-3 ${
-                          ann.pinned
-                            ? dm ? 'border border-[#2d5a56]/40 bg-[#1a2f2c]' : 'border border-[#c8dcd9] bg-[#eef7f4]'
-                            : dm ? 'bg-[#1a2330]' : 'bg-[#f8faf8]'
-                        }`}
-                      >
-                        {ann.pinned && (
-                          <FaThumbtack className="mt-0.5 shrink-0 rotate-45 text-[#2d5a56] text-xs" />
-                        )}
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className={`font-semibold text-sm truncate ${textMain}`}>{ann.title}</p>
-                            {ann.pinned && (
-                              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${dm ? 'bg-[#2d5a56]/40 text-[#9fd0c4]' : 'bg-[#2d5a56]/10 text-[#234946]'}`}>Pinned</span>
-                            )}
-                          </div>
-                          <p className={`text-xs mt-0.5 line-clamp-2 ${muted}`}>{ann.body}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </section>
+              {/* Two-column layout on larger screens: Activity feed + Announcements/Assignments */}
+              <div className="grid gap-5 lg:grid-cols-5">
 
-              {/* Upcoming Assignments */}
-              <section className={`rounded-[28px] border p-6 shadow-[0_10px_30px_rgba(17,24,39,0.05)] ${card}`}>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className={`text-base font-bold flex items-center gap-2 ${textMain}`}>
-                    <FaTasks className="text-[#3a66b8]" /> Upcoming Assignments
-                  </h2>
-                  <button
-                    onClick={() => goTab('assignments')}
-                    className="flex items-center gap-1 text-xs font-semibold text-[#2d5a56] hover:underline"
-                  >
-                    View all <FaChevronRight className="text-[10px]" />
-                  </button>
-                </div>
-                {overviewLoading ? (
-                  <div className="flex justify-center py-4">
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#2d5a56] border-t-transparent" />
+                {/* Left: Recent Activity feed */}
+                <section className={`rounded-[28px] border p-6 shadow-[0_6px_24px_rgba(17,24,39,0.05)] lg:col-span-2 ${card}`}>
+                  <div className="mb-4 flex items-center justify-between">
+                    <h2 className={`flex items-center gap-2 text-sm font-bold ${textMain}`}>
+                      <span className={`flex h-7 w-7 items-center justify-center rounded-xl text-xs ${dm ? 'bg-[#1a2f2c] text-[#9fd0c4]' : 'bg-[#e7f3ef] text-[#2d5a56]'}`}>
+                        <FaCheckCircle />
+                      </span>
+                      Recent Activity
+                    </h2>
                   </div>
-                ) : upcomingAssignments.length === 0 ? (
-                  <p className={`text-sm italic ${muted}`}>
-                    {isTeacher ? 'No assignments created yet.' : 'No upcoming assignments.'}
-                  </p>
-                ) : (
-                  <div className="space-y-2">
-                    {upcomingAssignments.map((a) => {
-                      const sub = !isTeacher ? studentSubmissionMap[a.id] : undefined;
-                      const isGraded = sub && sub.grade !== null && sub.grade !== undefined;
-                      const isSubmitted = sub && !isGraded;
-                      return (
-                        <div
-                          key={a.id}
-                          className={`flex items-center justify-between gap-4 rounded-2xl border px-4 py-3 ${
-                            dm ? 'border-[#1f2a34] bg-[#1a2330]' : 'border-[#edf0ed] bg-[#f8faf8]'
-                          }`}
+                  {overviewLoading ? (
+                    <div className="space-y-3">
+                      {[1,2,3].map(i => (
+                        <div key={i} className={`h-14 animate-pulse rounded-2xl ${dm ? 'bg-[#1a2330]' : 'bg-slate-100'}`} />
+                      ))}
+                    </div>
+                  ) : recentActivity.length === 0 ? (
+                    <div className={`flex flex-col items-center justify-center py-10 text-center ${muted}`}>
+                      <FaCheckCircle className="mb-2 text-3xl opacity-20" />
+                      <p className="text-sm">No activity yet</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {recentActivity.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => goTab(item.tab)}
+                          className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition hover:opacity-80 active:scale-[0.98] ${dm ? 'bg-[#1a2330]' : 'bg-[#f8faf8]'}`}
                         >
-                          <div className="min-w-0">
-                            <p className={`font-semibold text-sm truncate ${textMain}`}>{a.title}</p>
-                            {a.due_date && (
-                              <p className={`text-xs flex items-center gap-1 mt-0.5 ${muted}`}>
-                                <FaCalendarAlt /> Due: {new Date(a.due_date).toLocaleDateString(undefined, { dateStyle: 'medium' })}
-                              </p>
-                            )}
+                          <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm ${item.iconBg}`}>
+                            {item.icon}
                           </div>
-                          <div className="flex shrink-0 items-center gap-2">
-                            {!isTeacher && (
-                              isGraded
-                                ? <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700">Graded {sub.grade}/{a.max_points}</span>
-                                : isSubmitted
-                                ? <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700">Submitted</span>
-                                : <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${dm ? 'bg-[#1f2a34] text-slate-400' : 'bg-slate-100 text-slate-500'}`}>Pending</span>
-                            )}
-                            <span className={`text-xs font-bold ${muted}`}>{a.max_points}pt</span>
+                          <div className="min-w-0 flex-1">
+                            <p className={`truncate text-sm font-semibold ${textMain}`}>{item.title}</p>
+                            <p className={`text-xs ${muted}`}>{item.subtitle}</p>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </section>
+                          <span className={`shrink-0 text-[10px] font-medium ${muted}`}>
+                            {item.dateRaw ? new Date(item.dateRaw).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </section>
+
+                {/* Right: Announcements + Assignments stacked */}
+                <div className="space-y-5 lg:col-span-3">
+
+                  {/* Announcements */}
+                  <section className={`rounded-[28px] border p-6 shadow-[0_6px_24px_rgba(17,24,39,0.05)] ${card}`}>
+                    <div className="mb-4 flex items-center justify-between">
+                      <h2 className={`flex items-center gap-2 text-sm font-bold ${textMain}`}>
+                        <span className={`flex h-7 w-7 items-center justify-center rounded-xl text-xs ${dm ? 'bg-[#1a2f2c] text-[#9fd0c4]' : 'bg-[#e7f3ef] text-[#2d5a56]'}`}>
+                          <FaBullhorn />
+                        </span>
+                        Announcements
+                      </h2>
+                      <button
+                        onClick={() => goTab('announcements')}
+                        className={`flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-semibold transition hover:opacity-80 ${dm ? 'bg-[#1a2f2c] text-[#9fd0c4]' : 'bg-[#e7f3ef] text-[#234946]'}`}
+                      >
+                        View all <FaChevronRight className="text-[10px]" />
+                      </button>
+                    </div>
+                    {overviewLoading ? (
+                      <div className="space-y-2">
+                        {[1,2].map(i => (
+                          <div key={i} className={`h-12 animate-pulse rounded-2xl ${dm ? 'bg-[#1a2330]' : 'bg-slate-100'}`} />
+                        ))}
+                      </div>
+                    ) : recentAnnouncements.length === 0 ? (
+                      <div className={`flex flex-col items-center justify-center py-8 text-center ${muted}`}>
+                        <FaBullhorn className="mb-2 text-2xl opacity-20" />
+                        <p className="text-sm">{isTeacher ? 'Post your first announcement' : 'No announcements yet'}</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {recentAnnouncements.map((ann) => (
+                          <div
+                            key={ann.id}
+                            className={`rounded-2xl px-4 py-3 ${
+                              ann.pinned
+                                ? dm ? 'border border-[#2d5a56]/50 bg-[#1a2f2c]' : 'border border-[#c8dcd9] bg-[#f0faf7]'
+                                : dm ? 'bg-[#1a2330]' : 'bg-[#f8faf8]'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              {ann.pinned && <FaThumbtack className="shrink-0 text-[#2d5a56] text-[10px] rotate-45" />}
+                              <p className={`truncate text-sm font-semibold ${textMain}`}>{ann.title}</p>
+                              {ann.pinned && (
+                                <span className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${dm ? 'bg-[#2d5a56]/40 text-[#9fd0c4]' : 'bg-[#2d5a56]/10 text-[#234946]'}`}>Pinned</span>
+                              )}
+                            </div>
+                            {ann.body && <p className={`mt-1 line-clamp-2 text-xs leading-relaxed ${muted}`}>{ann.body}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </section>
+
+                  {/* Upcoming Assignments */}
+                  <section className={`rounded-[28px] border p-6 shadow-[0_6px_24px_rgba(17,24,39,0.05)] ${card}`}>
+                    <div className="mb-4 flex items-center justify-between">
+                      <h2 className={`flex items-center gap-2 text-sm font-bold ${textMain}`}>
+                        <span className={`flex h-7 w-7 items-center justify-center rounded-xl text-xs ${dm ? 'bg-[#1a2338] text-[#7baee8]' : 'bg-[#edf3f8] text-[#3a66b8]'}`}>
+                          <FaTasks />
+                        </span>
+                        Assignments
+                      </h2>
+                      <button
+                        onClick={() => goTab('assignments')}
+                        className={`flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-semibold transition hover:opacity-80 ${dm ? 'bg-[#1a2338] text-[#7baee8]' : 'bg-[#edf3f8] text-[#3a66b8]'}`}
+                      >
+                        View all <FaChevronRight className="text-[10px]" />
+                      </button>
+                    </div>
+                    {overviewLoading ? (
+                      <div className="space-y-2">
+                        {[1,2].map(i => (
+                          <div key={i} className={`h-12 animate-pulse rounded-2xl ${dm ? 'bg-[#1a2330]' : 'bg-slate-100'}`} />
+                        ))}
+                      </div>
+                    ) : upcomingAssignments.length === 0 ? (
+                      <div className={`flex flex-col items-center justify-center py-8 text-center ${muted}`}>
+                        <FaTasks className="mb-2 text-2xl opacity-20" />
+                        <p className="text-sm">{isTeacher ? 'No assignments yet' : 'No upcoming assignments'}</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {upcomingAssignments.map((a) => {
+                          const sub = !isTeacher ? studentSubmissionMap[a.id] : undefined;
+                          const isGraded = sub && sub.grade !== null && sub.grade !== undefined;
+                          const isSubmitted = sub && !isGraded;
+                          return (
+                            <button
+                              key={a.id}
+                              onClick={() => goTab('assignments')}
+                              className={`flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left transition hover:opacity-80 active:scale-[0.98] ${dm ? 'bg-[#1a2330]' : 'bg-[#f8faf8]'}`}
+                            >
+                              <div className="min-w-0">
+                                <p className={`truncate text-sm font-semibold ${textMain}`}>{a.title}</p>
+                                {a.due_date && (
+                                  <p className={`mt-0.5 flex items-center gap-1 text-xs ${muted}`}>
+                                    <FaCalendarAlt className="text-[10px]" />
+                                    Due {new Date(a.due_date).toLocaleDateString(undefined, { dateStyle: 'medium' })}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex shrink-0 items-center gap-1.5">
+                                {!isTeacher && (
+                                  isGraded
+                                    ? <span className="rounded-full bg-green-100 px-2.5 py-1 text-[10px] font-bold text-green-700">Graded {sub.grade}/{a.max_points}</span>
+                                    : isSubmitted
+                                    ? <span className="rounded-full bg-blue-100 px-2.5 py-1 text-[10px] font-bold text-blue-700">Submitted</span>
+                                    : <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${dm ? 'bg-amber-900/30 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>Pending</span>
+                                )}
+                                {a.max_points > 0 && (
+                                  <span className={`rounded-xl px-2 py-0.5 text-[10px] font-bold ${dm ? 'bg-[#1f2a34] text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{a.max_points}pt</span>
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </section>
+
+                </div>
+              </div>
 
             </div>
           ) : (

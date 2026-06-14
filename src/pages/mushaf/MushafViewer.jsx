@@ -7,7 +7,7 @@ import { NotesPanel } from '../../components/mushaf/NotesPanel';
 import { useQuranData } from '../../hooks/useQuranData';
 import { useAyahNotes } from '../../hooks/useAyahNotes';
 import { useAuth } from '../../contexts/AuthContext';
-import { createAppSocket } from '../../services/socket';
+import { getSocket } from '../../services/socket';
 
 const THEME_PREVIEWS = [
   { id: 'dark',  label: 'Dark',  pageBg: '#111827', panelBg: '#0d1118', textColor: '#ffffff', borderColor: '#2d5a56' },
@@ -56,18 +56,19 @@ export const MushafViewer = () => {
   // Socket setup for mushaf collaboration
   useEffect(() => {
     if (!token || !classId) return;
-    const socket = createAppSocket(token);
+    const socket = getSocket(token);
     socketRef.current = socket;
     socket.emit('class:join', { class_id: classId });
 
-    socket.on('mushaf:raised', (data) => {
-      if (!isTeacher) setRaisedBanner(data);
-    });
-    socket.on('mushaf:lowered', () => setRaisedBanner(null));
+    const onRaised = (data) => { if (!isTeacher) setRaisedBanner(data); };
+    const onLowered = () => setRaisedBanner(null);
+    socket.on('mushaf:raised', onRaised);
+    socket.on('mushaf:lowered', onLowered);
 
     return () => {
       socket.emit('class:leave', { class_id: classId });
-      socket.disconnect();
+      socket.off('mushaf:raised', onRaised);
+      socket.off('mushaf:lowered', onLowered);
     };
   }, [token, classId]);
 

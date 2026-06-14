@@ -11,7 +11,7 @@ import {
 } from 'react-icons/fa';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
-import { createAppSocket } from '../../services/socket';
+import { getSocket } from '../../services/socket';
 
 function initials(name) {
   return (name || '?')
@@ -108,23 +108,19 @@ export default function Chat() {
   useEffect(() => {
     if (!token || !classId) return;
 
-    const socket = createAppSocket(token);
-
+    const socket = getSocket(token);
     socketRef.current = socket;
 
-    socket.on('connect', () => {
+    const onConnect = () => {
       setConnected(true);
       socket.emit('chat:join', { class_id: classId });
-    });
-
-    socket.on('disconnect', () => setConnected(false));
-
-    socket.on('connect_error', (err) => {
+    };
+    const onDisconnect = () => setConnected(false);
+    const onConnectError = (err) => {
       setConnected(false);
       setError(err?.message || 'Realtime connection failed');
-    });
-
-    socket.on('chat:message', (payload) => {
+    };
+    const onChatMessage = (payload) => {
       setMessages((prev) => [
         ...prev,
         {
@@ -134,25 +130,29 @@ export default function Chat() {
           sent_at: payload?.sent_at,
         },
       ]);
-    });
-
-    socket.on('chat:online', (payload) => {
+    };
+    const onChatOnline = (payload) => {
       const users = payload?.users || [];
-      setOnlineUsers(
-        (Array.isArray(users) ? users : []).map((u) => ({
-          ...u,
-          id: Number(u.id),
-        }))
-      );
-    });
+      setOnlineUsers((Array.isArray(users) ? users : []).map((u) => ({ ...u, id: Number(u.id) })));
+    };
+    const onChatError = (payload) => setError(payload?.message || 'Class chat failed');
 
-    socket.on('chat:error', (payload) => {
-      setError(payload?.message || 'Class chat failed');
-    });
+    if (socket.connected) onConnect();
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+    socket.on('connect_error', onConnectError);
+    socket.on('chat:message', onChatMessage);
+    socket.on('chat:online', onChatOnline);
+    socket.on('chat:error', onChatError);
 
     return () => {
       socket.emit('chat:leave', { class_id: classId });
-      socket.disconnect();
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
+      socket.off('connect_error', onConnectError);
+      socket.off('chat:message', onChatMessage);
+      socket.off('chat:online', onChatOnline);
+      socket.off('chat:error', onChatError);
     };
   }, [classId, token]);
 
