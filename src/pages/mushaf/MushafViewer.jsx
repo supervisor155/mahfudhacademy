@@ -249,7 +249,7 @@ export const MushafViewer = () => {
         </div>
       </header>
 
-      {/* â”€â”€ Settings Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/*  Settings Panel  */}
       {showSettings && (
         <>
           <button
@@ -262,7 +262,7 @@ export const MushafViewer = () => {
             <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
               <div>
                 <h2 className="text-base font-bold text-slate-900">Reading Settings</h2>
-                <p className="text-xs text-slate-400">Personalise your Muá¹£á¸¥af experience</p>
+                <p className="text-xs text-slate-400">Personalise your Muaf experience</p>
               </div>
               <button onClick={() => setShowSettings(false)} className="rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">
                 <FaTimes />
@@ -275,7 +275,7 @@ export const MushafViewer = () => {
                   {THEME_PREVIEWS.map((t) => (
                     <button key={t.id} onClick={() => setTheme(t.id)} className={`relative flex flex-col items-center gap-2 rounded-2xl border-2 p-3 transition ${theme === t.id ? 'border-[#2d5a56] shadow-md' : 'border-slate-200 hover:border-slate-300'}`}>
                       <div className="flex h-11 w-full items-center justify-center rounded-xl border text-base" style={{ backgroundColor: t.panelBg, borderColor: t.borderColor, color: t.textColor }}>
-                        <span style={{ fontFamily: 'Noto Naskh Arabic, serif', fontSize: '18px' }}>Ø¢ÙŠØ©</span>
+                        <span style={{ fontFamily: 'Noto Naskh Arabic, serif', fontSize: '18px' }}></span>
                       </div>
                       <span className={`text-xs font-semibold ${theme === t.id ? 'text-[#2d5a56]' : 'text-slate-500'}`}>{t.label}</span>
                       {theme === t.id && <div className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#2d5a56]"><FaCheck className="text-[8px] text-white" /></div>}
@@ -289,7 +289,7 @@ export const MushafViewer = () => {
                   {FONT_OPTIONS.map((f) => (
                     <button key={f.id} onClick={() => setFontFamily(f.id)} className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 transition ${fontFamily === f.id ? 'border-[#2d5a56] bg-[#edf7f4]' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}>
                       <span className={`text-sm font-medium ${fontFamily === f.id ? 'text-[#2d5a56]' : 'text-slate-700'}`}>{f.label}</span>
-                      <span dir="rtl" style={{ fontFamily: f.fontStyle, fontSize: '17px' }} className="text-slate-700">Ø¨ÙØ³Ù’Ù…Ù Ù±Ù„Ù„ÙŽÙ‘Ù‡Ù</span>
+                      <span dir="rtl" style={{ fontFamily: f.fontStyle, fontSize: '17px' }} className="text-slate-700"> </span>
                     </button>
                   ))}
                 </div>
@@ -297,9 +297,9 @@ export const MushafViewer = () => {
               <section className="rounded-2xl border border-[#dce5df] bg-[#f5f9f7] p-4">
                 <p className="text-xs font-semibold text-[#2d5a56]">Tips</p>
                 <ul className="mt-2 space-y-1 text-xs text-slate-500">
-                  <li>â€¢ Tap an Ayah to bookmark or add a note</li>
-                  <li>â€¢ Long-press on mobile for the action menu</li>
-                  <li>â€¢ Tap a word to highlight and study it</li>
+                  <li> Tap an Ayah to bookmark or add a note</li>
+                  <li> Long-press on mobile for the action menu</li>
+                  <li> Tap a word to highlight and study it</li>
                 </ul>
               </section>
             </div>
@@ -307,7 +307,7 @@ export const MushafViewer = () => {
         </>
       )}
 
-      {/* â”€â”€ Body row (sidebar + main + notes) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/*  Body row (sidebar + main + notes)  */}
       <div className="flex flex-1 overflow-hidden min-h-0">
         {/* Desktop sidebar */}
         <div className="hidden lg:flex lg:w-72 2xl:w-80 lg:flex-col overflow-hidden shrink-0">
@@ -356,7 +356,7 @@ export const MushafViewer = () => {
           />
         </div>
 
-        {/* Notes side drawer â€” xl+ only */}
+        {/* Notes side drawer  xl+ only */}
         {notePanelOpen && selectedAyah && (
           <div className="hidden xl:flex xl:w-80 xl:shrink-0 xl:flex-col overflow-y-auto border-l border-white/10">
             <NotesPanel
@@ -372,7 +372,7 @@ export const MushafViewer = () => {
         )}
       </div>
 
-      {/* â”€â”€ Mobile Bottom Nav (5 buttons) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/*  Mobile Bottom Nav (5 buttons)  */}
       <nav className={`shrink-0 z-30 border-t px-1 pt-1 pb-[calc(env(safe-area-inset-bottom)+4px)] lg:hidden ${
         theme === 'dark'  ? 'border-white/5 bg-[#0d1118]/98 backdrop-blur' :
         theme === 'sepia' ? 'border-[#c4a97d]/30 bg-[#fdf6e3]/98 backdrop-blur' :
@@ -457,7 +457,7 @@ export const MushafViewer = () => {
         </div>
       </nav>
 
-      {/* Bottom Notes Panel â€” mobile/tablet only */}
+      {/* Bottom Notes Panel  mobile/tablet only */}
       {notePanelOpen && (
         <div className="xl:hidden shrink-0">
           <NotesPanel
@@ -478,10 +478,10 @@ export const MushafViewer = () => {
           <div className="flex w-full max-w-md items-center gap-3 rounded-2xl border border-[#c8dcd9] bg-[#2d5a56] px-5 py-4 text-white shadow-2xl">
             <FaChalkboardTeacher className="shrink-0 text-xl text-teal-200" />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold">Teacher is showing the Muá¹£á¸¥af</p>
+              <p className="text-sm font-semibold">Teacher is showing the Muaf</p>
               <p className="truncate text-xs text-teal-200">
                 {raisedBanner.surah_name ? `Surah ${raisedBanner.surah_name}` : `Surah ${raisedBanner.surah_id}`}
-                {raisedBanner.ayah_number > 1 ? ` â€” Ayah ${raisedBanner.ayah_number}` : ''}
+                {raisedBanner.ayah_number > 1 ? `  Ayah ${raisedBanner.ayah_number}` : ''}
               </p>
             </div>
             <div className="flex items-center gap-2">

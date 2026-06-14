@@ -9,7 +9,7 @@ export const useQuranData = () => {
   const [error, setError] = useState(null);
   const [currentSurah, setCurrentSurah] = useState(1);
 
-  // ── Fetch surahs list (cache-first) ───────────────────────────────────────
+  //  Fetch surahs list (cache-first) 
   useEffect(() => {
     const loadSurahs = async () => {
       // 1. Try IndexedDB cache first
@@ -40,7 +40,7 @@ export const useQuranData = () => {
     loadSurahs();
   }, []);
 
-  // ── Fetch ayahs for a surah (cache-first) ────────────────────────────────
+  //  Fetch ayahs for a surah (cache-first) 
   const fetchAyahs = useCallback(async (surahNumber) => {
     // 1. Try cache
     try {
@@ -85,7 +85,7 @@ export const useQuranData = () => {
     }
   }, []);
 
-  // ── Search ────────────────────────────────────────────────────────────────
+  //  Search 
   const searchSurahs = (query) => {
     if (!query.trim()) return surahs;
     const lowerQuery = query.toLowerCase();
@@ -109,9 +109,9 @@ export const useQuranData = () => {
 
 // Fallback Surahs for offline mode
 const FALLBACK_SURAHS = [
-  { number: 1, name: 'الفاتحة', englishName: 'Al-Fatiha', englishNameTranslation: 'The Opening', numberOfAyahs: 7, revealedIn: 'Makkah' },
-  { number: 2, name: 'البقرة', englishName: 'Al-Baqarah', englishNameTranslation: 'The Cow', numberOfAyahs: 286, revealedIn: 'Madinah' },
-  { number: 3, name: 'آل عمران', englishName: 'Ali Imran', englishNameTranslation: 'The Family of Imran', numberOfAyahs: 200, revealedIn: 'Madinah' },
-  { number: 4, name: 'النساء', englishName: 'An-Nisa', englishNameTranslation: 'The Women', numberOfAyahs: 176, revealedIn: 'Madinah' },
-  { number: 5, name: 'المائدة', englishName: 'Al-Maidah', englishNameTranslation: 'The Table', numberOfAyahs: 120, revealedIn: 'Madinah' },
+  { number: 1, name: '', englishName: 'Al-Fatiha', englishNameTranslation: 'The Opening', numberOfAyahs: 7, revealedIn: 'Makkah' },
+  { number: 2, name: '', englishName: 'Al-Baqarah', englishNameTranslation: 'The Cow', numberOfAyahs: 286, revealedIn: 'Madinah' },
+  { number: 3, name: ' ', englishName: 'Ali Imran', englishNameTranslation: 'The Family of Imran', numberOfAyahs: 200, revealedIn: 'Madinah' },
+  { number: 4, name: '', englishName: 'An-Nisa', englishNameTranslation: 'The Women', numberOfAyahs: 176, revealedIn: 'Madinah' },
+  { number: 5, name: '', englishName: 'Al-Maidah', englishNameTranslation: 'The Table', numberOfAyahs: 120, revealedIn: 'Madinah' },
 ];

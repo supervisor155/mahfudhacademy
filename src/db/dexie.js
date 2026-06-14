@@ -7,7 +7,7 @@ db.version(1).stores({
   reels: "++id,reel_id,class_id",
 });
 
-// v2 — Quran data cache (TTL-based, never changes so 7-day expiry is fine)
+// v2  Quran data cache (TTL-based, never changes so 7-day expiry is fine)
 db.version(2).stores({
   notes: "++id,ayah_id,type,synced",
   videos: "++id,video_id,class_id",

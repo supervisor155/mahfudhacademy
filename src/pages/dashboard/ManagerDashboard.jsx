@@ -11,7 +11,7 @@ import api from '../../services/api';
 import DashboardSidebar from '../../components/dashboard/DashboardSidebar';
 import OnboardingChecklistCard from '../../components/dashboard/OnboardingChecklistCard';
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+//  Helpers 
 
 function normalizeList(payload) {
   if (Array.isArray(payload)) return payload;
@@ -47,7 +47,7 @@ const ACTION_LABELS = {
   start_session: 'Started session', end_session: 'Ended session',
 };
 
-// ─── User table sub-component ─────────────────────────────────────────────────
+//  User table sub-component 
 
 function UserTable({ users, roleLabel, cardBg, text, muted, divider, darkMode }) {
   if (users.length === 0) {
@@ -78,7 +78,7 @@ function UserTable({ users, roleLabel, cardBg, text, muted, divider, darkMode })
               </div>
               <p className={`hidden truncate text-sm sm:block ${muted}`}>{u.email}</p>
               <p className={`shrink-0 text-xs ${muted}`}>
-                {u.created_at ? new Date(u.created_at).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '—'}
+                {u.created_at ? new Date(u.created_at).toLocaleDateString(undefined, { dateStyle: 'medium' }) : ''}
               </p>
             </div>
           );
@@ -88,7 +88,7 @@ function UserTable({ users, roleLabel, cardBg, text, muted, divider, darkMode })
   );
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
+//  Main component 
 
 export default function ManagerDashboard() {
   const navigate = useNavigate();
@@ -185,7 +185,7 @@ export default function ManagerDashboard() {
     },
   ];
 
-  // ── Styles ────────────────────────────────────────────────────────────────
+  //  Styles 
   const bg      = darkMode ? 'bg-[#13181d]' : 'bg-[#f4f6f4]';
   const cardBg  = darkMode ? 'bg-[#1f262d] border-[#283038]' : 'bg-white border-[#e3e7e3]';
   const text    = darkMode ? 'text-slate-100' : 'text-slate-900';
@@ -215,7 +215,7 @@ export default function ManagerDashboard() {
       <div className={`flex min-h-screen items-center justify-center ${bg}`} style={{ fontFamily: 'Sora, Manrope, system-ui, sans-serif' }}>
         <div className="text-center">
           <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-[#2d5a56] border-t-transparent" />
-          <p className={`text-lg font-semibold ${text}`}>Loading Manager Dashboard…</p>
+          <p className={`text-lg font-semibold ${text}`}>Loading Manager Dashboard</p>
         </div>
       </div>
     );
@@ -227,7 +227,7 @@ export default function ManagerDashboard() {
       <div className={`pointer-events-none absolute right-0 top-0 h-72 w-72 rounded-full blur-3xl ${darkMode ? 'bg-[#2f3f59]/30' : 'bg-[#d8e6ff]/55'}`} />
       <div className="flex min-h-screen">
 
-        {/* ── Sidebar ─────────────────────────────────────────────────────── */}
+        {/*  Sidebar  */}
         <aside className={`hidden xl:flex xl:w-72 xl:flex-col xl:px-5 xl:py-6 ${darkMode ? 'xl:bg-[#1a232a]' : 'xl:bg-[#182c31]'} xl:text-white`}>
           <div className="mb-8 space-y-1 px-3">
             <div className="text-[32px] font-bold tracking-tight text-[#d3ece4]">Mahfuz</div>
@@ -265,7 +265,7 @@ export default function ManagerDashboard() {
           </div>
         </aside>
 
-        {/* ── Main ────────────────────────────────────────────────────────── */}
+        {/*  Main  */}
         <div className="flex min-w-0 flex-1 flex-col">
 
           {/* Header */}
@@ -278,7 +278,7 @@ export default function ManagerDashboard() {
                 <FaSearch className="text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Search classes, users…"
+                  placeholder="Search classes, users"
                   value={classSearch}
                   onChange={(e) => { setClassSearch(e.target.value); setUserSearch(e.target.value); }}
                   className={`w-full border-0 bg-transparent text-sm outline-none ${darkMode ? 'text-slate-100 placeholder:text-slate-400' : 'text-slate-600 placeholder:text-slate-400'}`}
@@ -324,7 +324,7 @@ export default function ManagerDashboard() {
                 <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
               )}
 
-              {/* ── OVERVIEW ─────────────────────────────────────────────── */}
+              {/*  OVERVIEW  */}
               {activeTab === 'overview' && (
                 <div className="space-y-6">
                   <div>
@@ -450,7 +450,7 @@ export default function ManagerDashboard() {
                 </div>
               )}
 
-              {/* ── CLASSES ──────────────────────────────────────────────── */}
+              {/*  CLASSES  */}
               {activeTab === 'classes' && (
                 <div className="space-y-5">
                   <div>
@@ -459,7 +459,7 @@ export default function ManagerDashboard() {
                   </div>
                   <div className="relative">
                     <FaSearch className={`absolute left-4 top-1/2 -translate-y-1/2 text-sm ${muted}`} />
-                    <input type="text" placeholder="Search classes…" value={classSearch} onChange={(e) => setClassSearch(e.target.value)}
+                    <input type="text" placeholder="Search classes" value={classSearch} onChange={(e) => setClassSearch(e.target.value)}
                       className={`w-full rounded-2xl border pl-10 pr-4 py-3 text-sm outline-none transition focus:ring-4 focus:ring-[#dcece6] ${inputBg}`} />
                   </div>
                   {filteredClasses.length === 0 ? (
@@ -479,7 +479,7 @@ export default function ManagerDashboard() {
                           <p className={`mt-1 line-clamp-2 text-xs ${muted}`}>{cls.description || 'No description'}</p>
                           <div className={`mt-3 flex items-center gap-1 text-xs ${muted}`}>
                             <FaUsers className="text-[10px]" />
-                            <span>{cls.memberCount ?? '—'} members</span>
+                            <span>{cls.memberCount ?? ''} members</span>
                           </div>
                         </button>
                       ))}
@@ -488,7 +488,7 @@ export default function ManagerDashboard() {
                 </div>
               )}
 
-              {/* ── TEACHERS ─────────────────────────────────────────────── */}
+              {/*  TEACHERS  */}
               {activeTab === 'teachers' && (
                 <div className="space-y-5">
                   <div>
@@ -497,14 +497,14 @@ export default function ManagerDashboard() {
                   </div>
                   <div className="relative">
                     <FaSearch className={`absolute left-4 top-1/2 -translate-y-1/2 text-sm ${muted}`} />
-                    <input type="text" placeholder="Search teachers…" value={userSearch} onChange={(e) => setUserSearch(e.target.value)}
+                    <input type="text" placeholder="Search teachers" value={userSearch} onChange={(e) => setUserSearch(e.target.value)}
                       className={`w-full rounded-2xl border pl-10 pr-4 py-3 text-sm outline-none transition focus:ring-4 focus:ring-[#dcece6] ${inputBg}`} />
                   </div>
                   <UserTable users={filteredTeachers} roleLabel="Teacher" cardBg={cardBg} text={text} muted={muted} divider={divider} darkMode={darkMode} />
                 </div>
               )}
 
-              {/* ── STUDENTS ─────────────────────────────────────────────── */}
+              {/*  STUDENTS  */}
               {activeTab === 'students' && (
                 <div className="space-y-5">
                   <div>
@@ -513,19 +513,19 @@ export default function ManagerDashboard() {
                   </div>
                   <div className="relative">
                     <FaSearch className={`absolute left-4 top-1/2 -translate-y-1/2 text-sm ${muted}`} />
-                    <input type="text" placeholder="Search students…" value={userSearch} onChange={(e) => setUserSearch(e.target.value)}
+                    <input type="text" placeholder="Search students" value={userSearch} onChange={(e) => setUserSearch(e.target.value)}
                       className={`w-full rounded-2xl border pl-10 pr-4 py-3 text-sm outline-none transition focus:ring-4 focus:ring-[#dcece6] ${inputBg}`} />
                   </div>
                   <UserTable users={filteredStudents} roleLabel="Student" cardBg={cardBg} text={text} muted={muted} divider={divider} darkMode={darkMode} />
                 </div>
               )}
 
-              {/* ── ACTIVITY LOG ─────────────────────────────────────────── */}
+              {/*  ACTIVITY LOG  */}
               {activeTab === 'activity' && (
                 <div className="space-y-5">
                   <div>
                     <h2 className={`text-2xl font-bold ${text}`}>Activity Log</h2>
-                    <p className={`text-sm ${muted}`}>Platform-wide audit trail — last 30 actions</p>
+                    <p className={`text-sm ${muted}`}>Platform-wide audit trail  last 30 actions</p>
                   </div>
                   {auditLogs.length === 0 ? (
                     <div className={`rounded-[28px] border border-dashed p-12 text-center ${darkMode ? 'border-[#2c353d]' : 'border-[#ced9d5]'}`}>

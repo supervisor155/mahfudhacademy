@@ -48,7 +48,7 @@ export default function Announcements() {
       );
       setActiveSession(active || null);
     } catch {
-      // silently fail — banner is optional
+      // silently fail  banner is optional
     }
   };
 
@@ -204,7 +204,7 @@ export default function Announcements() {
                   <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-wrap">{ann.body}</p>
                   <div className="mt-3 flex items-center gap-3 text-xs text-slate-400">
                     <span className="font-medium text-slate-500">{ann.author_name || 'Teacher'}</span>
-                    <span>·</span>
+                    <span></span>
                     <span>{timeAgo(ann.created_at)}</span>
                   </div>
                 </div>

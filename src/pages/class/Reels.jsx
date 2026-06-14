@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../../services/api';
 import { resolveMediaUrl } from '../../services/media';
@@ -10,7 +10,7 @@ import {
 } from 'react-icons/fa';
 import useIntersectionObserver from '../../hooks/useIntersectionObserver';
 
-/* â”€â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/*  helpers  */
 function initials(name) {
   return (name || '?')
     .split(' ')
@@ -27,7 +27,7 @@ function fmtCount(n) {
   return String(num);
 }
 
-/* â”€â”€â”€ Single Reel Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/*  Single Reel Card  */
 function ReelCard({ reel, isTeacher, onDelete }) {
   const [ref, isVisible] = useIntersectionObserver({ threshold: 0.6 });
   const videoRef = useRef(null);
@@ -193,7 +193,7 @@ function ReelCard({ reel, isTeacher, onDelete }) {
   );
 }
 
-/* â”€â”€â”€ Upload Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/*  Upload Modal  */
 function UploadModal({ classId, onClose, onUploaded }) {
   const fileInputRef = useRef(null);
   const [uploadMode, setUploadMode] = useState('file');
@@ -269,11 +269,11 @@ function UploadModal({ classId, onClose, onUploaded }) {
               {selectedFile ? (
                 <><FaPlay className="text-3xl text-[#2d5a56]" />
                   <p className="text-sm font-semibold text-slate-800 truncate max-w-[240px]">{selectedFile.name}</p>
-                  <p className="text-xs text-slate-500">{(selectedFile.size / (1024 * 1024)).toFixed(1)} MB Â· click to change</p></>
+                  <p className="text-xs text-slate-500">{(selectedFile.size / (1024 * 1024)).toFixed(1)} MB  click to change</p></>
               ) : (
                 <><FaUpload className="text-3xl text-slate-400" />
                   <p className="text-sm font-semibold text-slate-700">Click to select a video</p>
-                  <p className="text-xs text-slate-400">MP4, MOV, WebM â€” max 500 MB</p></>
+                  <p className="text-xs text-slate-400">MP4, MOV, WebM  max 500 MB</p></>
               )}
             </label>
           ) : (
@@ -286,7 +286,7 @@ function UploadModal({ classId, onClose, onUploaded }) {
             className="w-full rounded-2xl border border-[#d7ded9] bg-[#f6f8f6] px-4 py-3 text-slate-800 outline-none focus:border-[#7ea89c] focus:ring-4 focus:ring-[#dcece6]" rows={2} />
           {uploading && uploadMode === 'file' && (
             <div className="space-y-1">
-              <div className="flex justify-between text-xs text-slate-500"><span>Uploadingâ€¦</span><span>{progress}%</span></div>
+              <div className="flex justify-between text-xs text-slate-500"><span>Uploading</span><span>{progress}%</span></div>
               <div className="h-2 overflow-hidden rounded-full bg-[#dde4e0]">
                 <div className="h-full rounded-full bg-[#2d5a56] transition-all" style={{ width: `${progress}%` }} />
               </div>
@@ -297,7 +297,7 @@ function UploadModal({ classId, onClose, onUploaded }) {
             <button type="submit" disabled={uploading || (uploadMode === 'file' && !selectedFile)}
               className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#2d5a56] py-3 text-sm font-semibold text-white transition hover:bg-[#234946] disabled:opacity-60">
               {uploading ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <FaUpload />}
-              {uploading ? `Uploading${uploadMode === 'file' ? ` ${progress}%` : 'â€¦'}` : 'Add Reel'}
+              {uploading ? `Uploading${uploadMode === 'file' ? ` ${progress}%` : ''}` : 'Add Reel'}
             </button>
             <button type="button" onClick={onClose}
               className="flex-1 rounded-2xl border border-[#d7ded9] bg-[#f5f7f5] py-3 text-sm font-semibold text-slate-600 transition hover:bg-white">
@@ -310,7 +310,7 @@ function UploadModal({ classId, onClose, onUploaded }) {
   );
 }
 
-/* â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/*  Main Component  */
 export default function Reels() {
   const { classId } = useParams();
   const { user } = useAuth();

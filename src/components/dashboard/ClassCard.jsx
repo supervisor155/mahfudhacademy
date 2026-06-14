@@ -25,7 +25,7 @@ export default function ClassCard({ classData, onClick }) {
   const inviteCode = classData.invite_code || null;
   const activeStudents = Number(classData.activeStudents) || 0;
   const maskedCode = inviteCode
-    ? `${'•'.repeat(Math.max(0, inviteCode.length - 4))}${inviteCode.slice(-4)}`
+    ? `${''.repeat(Math.max(0, inviteCode.length - 4))}${inviteCode.slice(-4)}`
     : null;
 
   function handleCopy(e) {

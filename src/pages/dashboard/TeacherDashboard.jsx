@@ -62,7 +62,7 @@ function TeacherDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newClass, setNewClass] = useState({ name: '', description: '', cover_color: 'teal' });
-  const [createdClass, setCreatedClass] = useState(null); // { name, invite_code } — shown after creation
+  const [createdClass, setCreatedClass] = useState(null); // { name, invite_code }  shown after creation
   const [codeCopied, setCodeCopied] = useState(false);
   const [darkMode, setDarkMode] = useState(
     () => localStorage.getItem('teacher-dashboard-dark-mode') === 'true'
@@ -579,13 +579,13 @@ function TeacherDashboard() {
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm text-white/55" style={{ fontFamily: 'Noto Naskh Arabic, serif' }}>أهلا وسهلا</p>
+                      <p className="text-sm text-white/55" style={{ fontFamily: 'Noto Naskh Arabic, serif' }}> </p>
                       <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
                         Assalamu Alaikum, {userFirstName}
                       </h1>
                       <p className="mt-1 text-sm text-white/60">
                         {classes.length > 0
-                          ? `${totalStudents} student${totalStudents !== 1 ? 's' : ''} · ${classes.length} class${classes.length !== 1 ? 'es' : ''}`
+                          ? `${totalStudents} student${totalStudents !== 1 ? 's' : ''}  ${classes.length} class${classes.length !== 1 ? 'es' : ''}`
                           : 'Create your first class to begin teaching.'}
                       </p>
                     </div>
@@ -1148,7 +1148,7 @@ function TeacherDashboard() {
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md overflow-hidden rounded-[30px] border border-[#dce4de] bg-white shadow-[0_24px_60px_rgba(17,24,39,0.16)]">
 
-            {/* ── Step 2: show invite code after creation ── */}
+            {/*  Step 2: show invite code after creation  */}
             {createdClass ? (
               <>
                 <div className="border-b border-[#edf0ed] px-6 py-5">
@@ -1201,7 +1201,7 @@ function TeacherDashboard() {
                 </div>
               </>
             ) : (
-              /* ── Step 1: create form ── */
+              /*  Step 1: create form  */
               <>
                 {/* Cover preview header */}
                 <div className={`relative h-24 bg-gradient-to-br ${COVERS[newClass.cover_color]?.bg || COVERS.teal.bg} overflow-hidden`}>

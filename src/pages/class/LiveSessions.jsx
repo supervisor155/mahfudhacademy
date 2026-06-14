@@ -276,7 +276,7 @@ export default function LiveSessions() {
 
     try {
       if (signal.type === 'offer') {
-        // Always discard old PC when receiving a new offer — renegotiation
+        // Always discard old PC when receiving a new offer  renegotiation
         // creates a brand-new PC on the sender side so we must do the same.
         const old = peerConnectionsRef.current.get(peerId);
         if (old) {
@@ -327,7 +327,7 @@ export default function LiveSessions() {
         }
       }
     } catch {
-      // Transient signal errors are usually self-recovering — log only, no UI noise.
+      // Transient signal errors are usually self-recovering  log only, no UI noise.
     }
   }
 
@@ -770,7 +770,7 @@ export default function LiveSessions() {
                     {peer.stream ? (
                       <StreamPlayer stream={peer.stream} className="h-full w-full object-cover" />
                     ) : (
-                      <div className="flex h-full items-center justify-center text-xs text-white/40">Connecting media…</div>
+                      <div className="flex h-full items-center justify-center text-xs text-white/40">Connecting media</div>
                     )}
                   </div>
                 </div>

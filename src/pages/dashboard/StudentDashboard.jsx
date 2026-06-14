@@ -30,7 +30,7 @@ import ReelCard from '../../components/dashboard/ReelCard';
 import SessionCard from '../../components/dashboard/SessionCard';
 import NotificationBell from '../../components/common/NotificationBell';
 
-// â”€â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  helpers 
 
 function normalizeList(payload) {
   if (Array.isArray(payload)) return payload;
@@ -71,7 +71,7 @@ function formatCountdown(ts) {
   return `in ${m}m`;
 }
 
-// â”€â”€â”€ component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//  component 
 
 function StudentDashboard() {
   const navigate = useNavigate();
@@ -93,7 +93,7 @@ function StudentDashboard() {
     localStorage.setItem('student-dm', darkMode ? '1' : '0');
   }, [darkMode]);
 
-  // â”€â”€ data loading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  //  data loading 
   useEffect(() => {
     if (authLoading) return;
     let cancelled = false;
@@ -142,7 +142,7 @@ function StudentDashboard() {
     return () => { cancelled = true; };
   }, [authLoading]);
 
-  // â”€â”€ derived â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  //  derived 
   const liveSessions     = sessions.filter(s => s.status === 'live');
   const upcomingSessions = sessions
     .filter(s => s.status === 'upcoming')
@@ -181,7 +181,7 @@ function StudentDashboard() {
     },
   ];
 
-  // â”€â”€ join class â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  //  join class 
   async function handleJoinClass(e) {
     e.preventDefault();
     setJoining(true);
@@ -200,7 +200,7 @@ function StudentDashboard() {
     }
   }
 
-  // â”€â”€ theme tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  //  theme tokens 
   const dm        = darkMode;
   const bg        = dm ? 'bg-[#0f1419]'                          : 'bg-[#f4f6f3]';
   const sidebarBg = dm ? 'bg-[#0d1117]'                          : 'bg-[#1a3530]';
@@ -211,24 +211,24 @@ function StudentDashboard() {
   const muted     = dm ? 'text-slate-400'                        : 'text-slate-500';
   const divider   = dm ? 'border-[#1e2730]'                      : 'border-[#e8ece8]';
 
-  // â”€â”€ loading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  //  loading 
   if (authLoading || isLoading) {
     return (
       <div className={`flex min-h-screen items-center justify-center ${bg}`} style={{ fontFamily: 'Manrope, system-ui, sans-serif' }}>
         <div className="text-center">
           <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-[#2d5a56] border-t-transparent" />
-          <p className={`text-lg font-semibold ${text}`}>Loading your dashboardâ€¦</p>
+          <p className={`text-lg font-semibold ${text}`}>Loading your dashboard...</p>
         </div>
       </div>
     );
   }
 
-  // â”€â”€ render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  //  render 
   return (
     <div className={`min-h-screen ${bg} ${text}`} style={{ fontFamily: 'Manrope, system-ui, sans-serif' }}>
       <div className="flex min-h-screen">
 
-        {/* â”€â”€ Sidebar (xl+) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/*  Sidebar (xl+)  */}
         <aside className={`hidden xl:flex xl:w-64 xl:shrink-0 xl:flex-col ${sidebarBg} xl:sticky xl:top-0 xl:h-screen xl:overflow-y-auto xl:px-4 xl:py-6`}>
           <div className="mb-8 px-2">
             <div className="text-2xl font-bold tracking-tight text-[#cce7dd]">Mahfuz</div>
@@ -265,10 +265,10 @@ function StudentDashboard() {
           </div>
         </aside>
 
-        {/* â”€â”€ Main column â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/*  Main column  */}
         <div className="flex min-w-0 flex-1 flex-col">
 
-          {/* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          {/*  Header  */}
           <header className={`sticky top-0 z-20 border-b ${headerBg} backdrop-blur-md`}>
             <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
               <span className={`text-xl font-bold tracking-tight xl:hidden ${dm ? 'text-[#b6f2d6]' : 'text-[#234946]'}`}>
@@ -279,7 +279,7 @@ function StudentDashboard() {
                 <FaSearch className={`shrink-0 text-sm ${muted}`} />
                 <input
                   type="text"
-                  placeholder="Search classes, sessionsâ€¦"
+                  placeholder="Search classes, sessions..."
                   className={`w-full bg-transparent text-sm outline-none ${text} placeholder:text-slate-400`}
                 />
               </div>
@@ -299,7 +299,7 @@ function StudentDashboard() {
                   onClick={() => navigate('/mushaf')}
                   className={`hidden items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white transition sm:inline-flex ${dm ? 'bg-[#234946] hover:bg-[#1a3530]' : 'bg-[#2d5a56] hover:bg-[#234946]'}`}
                 >
-                  <FaBookOpen className="text-xs" /> Muá¹£á¸¥af
+                  <FaBookOpen className="text-xs" /> Mushaf
                 </button>
 
                 <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold ${dm ? 'bg-[#1f2c3a] text-[#b6f2d6]' : 'bg-[#d8e8e4] text-[#234946]'}`}>
@@ -311,17 +311,17 @@ function StudentDashboard() {
             </div>
           </header>
 
-          {/* â”€â”€ Page content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          {/*  Page content  */}
           <main className="mx-auto w-full max-w-6xl flex-1 space-y-5 px-4 py-5 pb-28 sm:px-6 xl:pb-8">
 
             {error && (
               <div className="flex items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 <span>{error}</span>
-                <button onClick={() => setError('')} className="font-semibold text-red-500 hover:text-red-700">âœ•</button>
+                <button onClick={() => setError('')} className="font-semibold text-red-500 hover:text-red-700">x</button>
               </div>
             )}
 
-            {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• HOME tab â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+            {/*  HOME tab  */}
             {activeTab === 'home' && (
               <>
                                 {/* Hero Banner */}
@@ -426,7 +426,7 @@ function StudentDashboard() {
                         <p className={`mt-1 text-sm ${muted}`}>{nextSession.instructorName || 'Your teacher'}</p>
                         <div className="mt-3 flex items-center justify-between">
                           <span className={`rounded-xl px-3 py-1 text-xs font-semibold ${nextSession.status === 'live' ? 'bg-red-100 text-red-700' : dm ? 'bg-[#1f3a36] text-[#9fd0c4]' : 'bg-[#e7f3ef] text-[#234946]'}`}>
-                            {nextSession.status === 'live' ? 'â— Live' : formatCountdown(nextSession.start_time) || 'Upcoming'}
+                            {nextSession.status === 'live' ? ' Live' : formatCountdown(nextSession.start_time) || 'Upcoming'}
                           </span>
                           <button
                             onClick={() => navigate(`/class/${nextSession.class_id}/live`)}
@@ -450,7 +450,7 @@ function StudentDashboard() {
                         { label: 'Live',         icon: FaWifi,      action: () => setActiveTab('sessions'), color: dm ? 'bg-[#2a1f1f] text-[#e8a0a0]' : 'bg-[#fdeaea] text-[#c45b5b]' },
                         { label: 'Chat',         icon: FaComments,  action: () => navigate('/chat'),       color: dm ? 'bg-[#1f263a] text-[#9fb6ff]' : 'bg-[#edf0ff] text-[#3655c9]' },
                         { label: 'Reels',        icon: FaFilm,      action: () => navigate('/reels'),       color: dm ? 'bg-[#1e1f2a] text-[#a0a8e8]' : 'bg-[#eeeffe] text-[#5b5bc4]' },
-                        { label: 'Holy Muá¹£á¸¥af',  icon: FaBookOpen,  action: () => navigate('/mushaf'),      color: dm ? 'bg-[#1f2e1f] text-[#9fd09f]' : 'bg-[#edf6ee] text-[#4f775c]' },
+                        { label: 'Holy Mushaf',  icon: FaBookOpen,  action: () => navigate('/mushaf'),      color: dm ? 'bg-[#1f2e1f] text-[#9fd09f]' : 'bg-[#edf6ee] text-[#4f775c]' },
                       ].map(q => (
                         <button
                           key={q.label}
@@ -531,7 +531,7 @@ function StudentDashboard() {
               </>
             )}
 
-            {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• CLASSES tab â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+            {/*  CLASSES tab  */}
             {activeTab === 'classes' && (
               <section>
                 <div className="mb-4 flex items-center justify-between">
@@ -571,7 +571,7 @@ function StudentDashboard() {
               </section>
             )}
 
-            {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• REELS tab â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+            {/*  REELS tab  */}
             {activeTab === 'reels' && (
               <section>
                 <div className="mb-4 flex items-center justify-between">
@@ -599,7 +599,7 @@ function StudentDashboard() {
               </section>
             )}
 
-            {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• SESSIONS tab â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+            {/*  SESSIONS tab  */}
             {activeTab === 'sessions' && (
               <section>
                 <div className="mb-4">
@@ -655,7 +655,7 @@ function StudentDashboard() {
         </div>
       </div>
 
-      {/* â”€â”€ Bottom nav (mobile / tablet) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/*  Bottom nav (mobile / tablet)  */}
       <nav className={`fixed inset-x-0 bottom-0 z-30 border-t xl:hidden ${dm ? 'border-[#1e2730] bg-[#0f1419]/95' : 'border-[#dde4de] bg-white/95'} backdrop-blur-md`}>
         <div className="grid grid-cols-5">
           {[
@@ -689,7 +689,7 @@ function StudentDashboard() {
         </div>
       </nav>
 
-      {/* â”€â”€ Join modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/*  Join modal  */}
       {showJoinModal && (
         <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center">
           <div className={`w-full overflow-hidden rounded-t-[28px] border sm:max-w-md sm:rounded-[28px] ${dm ? 'border-[#1f2a34] bg-[#161d24]' : 'border-[#dce4de] bg-white'}`}>
@@ -704,7 +704,7 @@ function StudentDashboard() {
                   type="text"
                   value={joinCode}
                   onChange={e => { setJoinCode(e.target.value); setJoinError(''); }}
-                  placeholder="e.g., a3f2b1c8â€¦"
+                  placeholder="e.g., e.g., a3f2b1c8..."
                   className={`w-full rounded-2xl border px-4 py-3 font-mono text-sm outline-none transition focus:ring-4 ${dm ? 'border-[#1f2a34] bg-[#0f1419] text-slate-100 focus:border-[#3a6b62] focus:ring-[#1a3530]' : 'border-[#d7ded9] bg-[#f6f8f6] text-slate-800 focus:border-[#7ea89c] focus:ring-[#dcece6]'}`}
                   required
                   autoFocus
@@ -720,7 +720,7 @@ function StudentDashboard() {
                   className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#2d5a56] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#234946] disabled:opacity-60"
                 >
                   {joining && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />}
-                  {joining ? 'Joiningâ€¦' : 'Join Class'}
+                  {joining ? 'Joining...' : 'Join Class'}
                 </button>
                 <button
                   type="button"

@@ -63,7 +63,7 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
-// Role-locked dashboard route — redirects to the user's own dashboard if wrong role
+// Role-locked dashboard route  redirects to the user's own dashboard if wrong role
 function RoleRoute({ allowedRole, children }) {
   const { loading, token, user } = useAuth();
 
@@ -98,7 +98,7 @@ export default function AppRouter() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Role-based dashboards — each locked to its own role */}
+        {/* Role-based dashboards  each locked to its own role */}
         <Route path="/dashboard/owner"   element={<RoleRoute allowedRole="owner"><OwnerDashboard /></RoleRoute>} />
         <Route path="/dashboard/manager" element={<RoleRoute allowedRole="manager"><ManagerDashboard /></RoleRoute>} />
         <Route path="/dashboard/teacher" element={<RoleRoute allowedRole="teacher"><TeacherDashboard /></RoleRoute>} />
@@ -136,7 +136,7 @@ export default function AppRouter() {
         {/* Profile page */}
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
-        {/* Muṣḥaf Viewer — open to all, no login required */}
+        {/* Muaf Viewer  open to all, no login required */}
         <Route path="/mushaf" element={<MushafViewer />} />
         <Route path="/mushaf/:surahId" element={<MushafViewer />} />
 

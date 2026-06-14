@@ -135,8 +135,8 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // remember=true → localStorage (survives browser close)
-  // remember=false → sessionStorage (cleared when tab closes)
+  // remember=true  localStorage (survives browser close)
+  // remember=false  sessionStorage (cleared when tab closes)
   const login = async (identifier, password, remember = false) => {
     try {
       const res = await api.post('/api/auth/login', { identifier, password });

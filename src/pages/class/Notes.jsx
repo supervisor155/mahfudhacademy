@@ -222,7 +222,7 @@ export default function Notes() {
         <div>
           <h2 className="text-2xl font-bold text-slate-900">Class Notes</h2>
           <p className="text-sm text-slate-500 mt-0.5">
-            {notes.length} note{notes.length !== 1 ? 's' : ''} · Saved locally
+            {notes.length} note{notes.length !== 1 ? 's' : ''}  Saved locally
           </p>
         </div>
         <button

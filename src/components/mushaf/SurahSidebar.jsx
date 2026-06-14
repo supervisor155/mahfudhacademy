@@ -29,7 +29,7 @@ export const SurahSidebar = ({
           Surah Index
         </div>
         <h2 className="mb-3 text-lg font-bold text-white" style={{ fontFamily: 'Noto Naskh Arabic, serif' }}>
-          القرآن الكريم
+           
         </h2>
         
         {/* Search Box */}
@@ -84,7 +84,7 @@ export const SurahSidebar = ({
                         </span>
                       </div>
                       <p className={`mt-1 flex items-center gap-1 text-xs ${isActive ? 'text-[#c7ddd7]' : 'text-[#88a6a0]'}`}>
-                        {surah.numberOfAyahs} Ayahs • {surah.revealedIn}
+                        {surah.numberOfAyahs} Ayahs  {surah.revealedIn}
                       </p>
                     </div>
 

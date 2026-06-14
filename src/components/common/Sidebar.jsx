@@ -48,7 +48,7 @@ export default function Sidebar() {
         className="w-14 h-14 rounded-lg hover:bg-blue-50 flex items-center justify-center text-gray-600 hover:text-blue-600 transition"
         title="Smart Mushaf"
       >
-        📋
+        
       </button>
 
       {/* Admin/Manager - only show for appropriate roles */}

@@ -17,7 +17,7 @@ import {
 } from 'react-icons/fa';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
-import { createAppSocket } from '../../services/socket';
+import { getSocket } from '../../services/socket';
 
 function initials(name) {
   return (name || '?')
@@ -95,7 +95,7 @@ export default function InboxChat() {
   useEffect(() => { callRef.current = call; }, [call]);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-  // ─── WebRTC helpers ──────────────────────────────────────────────────────────
+  //  WebRTC helpers 
 
   function cleanupCall() {
     callPcRef.current?.close();
@@ -256,12 +256,12 @@ export default function InboxChat() {
     setCallCamOn((v) => !v);
   }
 
-  // ─── Socket setup ────────────────────────────────────────────────────────────
+  //  Socket setup 
 
   useEffect(() => {
     if (!token) return;
 
-    const socket = createAppSocket(token);
+    const socket = getSocket(token);
     socketRef.current = socket;
 
     socket.on('connect_error', (err) => {
@@ -350,7 +350,18 @@ export default function InboxChat() {
 
     return () => {
       cleanupCall();
-      socket.disconnect();
+      // Remove only our listeners  don't disconnect the shared singleton
+      socket.off('connect_error');
+      socket.off('chat:users:presence');
+      socket.off('chat:user:presence');
+      socket.off('chat:dm:message');
+      socket.off('chat:dm:error');
+      socket.off('dm:call:incoming');
+      socket.off('dm:call:accepted');
+      socket.off('dm:call:signal');
+      socket.off('dm:call:rejected');
+      socket.off('dm:call:cancelled');
+      socket.off('dm:call:ended');
     };
   }, [token, user?.id]);
 
@@ -487,7 +498,7 @@ export default function InboxChat() {
     });
   }, [contacts, search, onlineMap, lastMessageMap]);
 
-  // ─── Call Overlays ────────────────────────────────────────────────────────────
+  //  Call Overlays 
 
   function renderCallOverlay() {
     if (!call) return null;
@@ -605,7 +616,7 @@ export default function InboxChat() {
     return null;
   }
 
-  // ─── Main UI ──────────────────────────────────────────────────────────────────
+  //  Main UI 
 
   return (
     <div className="min-h-screen bg-[#060c16] text-white" style={{ fontFamily: 'Manrope, system-ui, sans-serif' }}>

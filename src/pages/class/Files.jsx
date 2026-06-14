@@ -147,7 +147,7 @@ export default function Files() {
           <h2 className="text-2xl font-bold text-slate-900">Class Files</h2>
           <p className="text-sm text-slate-500 mt-0.5">
             {files.length} file{files.length !== 1 ? 's' : ''}
-            {isTeacher && ' · Drag & drop to upload'}
+            {isTeacher && '  Drag & drop to upload'}
           </p>
         </div>
         {isTeacher && (
@@ -210,7 +210,7 @@ export default function Files() {
                     {file.filename || file.name || 'Unnamed file'}
                   </p>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    {[formatSize(file.size_bytes), formatDate(file.created_at)].filter(Boolean).join(' · ')}
+                    {[formatSize(file.size_bytes), formatDate(file.created_at)].filter(Boolean).join('  ')}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
@@ -247,7 +247,7 @@ export default function Files() {
             <div className="flex items-center justify-between border-b border-[#edf0ed] px-6 py-5">
               <div>
                 <h3 className="text-xl font-bold text-slate-900">Upload File</h3>
-                <p className="mt-0.5 text-sm text-slate-500">PDFs, slides, images, audio — max 100 MB</p>
+                <p className="mt-0.5 text-sm text-slate-500">PDFs, slides, images, audio  max 100 MB</p>
               </div>
               <button
                 onClick={() => { setShowUpload(false); setSelectedFile(null); setError(''); }}

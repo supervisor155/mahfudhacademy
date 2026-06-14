@@ -30,7 +30,7 @@ const FONT_FAMILY_MAP = {
   amiri:    '"Amiri", "Noto Naskh Arabic", serif',
 };
 
-// Theme token map – every colour decision lives here
+// Theme token map  every colour decision lives here
 const T = {
   dark: {
     container:   'border-white/5 bg-[#0d1118]',
@@ -208,7 +208,7 @@ export const AyahDisplay = ({
   const toArabicNumber = (value) => {
     if (value === null || value === undefined) return '';
 
-    return String(value).replace(/\d/g, (digit) => '٠١٢٣٤٥٦٧٨٩'[Number(digit)]);
+    return String(value).replace(/\d/g, (digit) => ''[Number(digit)]);
   };
 
   const pages = useMemo(() => {
@@ -270,7 +270,7 @@ export const AyahDisplay = ({
     surahAudioStateRef.current = surahAudioState;
   }, [surahAudioState]);
 
-  // ── Cache-first single-page loader ──────────────────────────────────────
+  //  Cache-first single-page loader 
   const loadPage = useCallback(async (pageNumber, signal) => {
     if (!pageNumber) return null;
     // 1. Dexie cache
@@ -289,7 +289,7 @@ export const AyahDisplay = ({
     return ayahRows;
   }, [currentSurahNumber]);
 
-  // ── Load visible page, then lazily prefetch neighbours ───────────────────
+  //  Load visible page, then lazily prefetch neighbours 
   useEffect(() => {
     const controller = new AbortController();
 
@@ -638,7 +638,7 @@ export const AyahDisplay = ({
           <div className="inline-block animate-spin">
             <FaScroll className="text-3xl text-[#2d5a56]" />
           </div>
-          <p className={`mt-3 text-sm ${tk.loadingText}`}>Loading Muṣḥaf pages...</p>
+          <p className={`mt-3 text-sm ${tk.loadingText}`}>Loading Muaf pages...</p>
         </div>
       </div>
     );
@@ -657,7 +657,7 @@ export const AyahDisplay = ({
       <div className={`hidden shrink-0 border-b ${tk.header} px-4 py-4 sm:block sm:px-5`}>
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div className="min-w-0">
-            <p className={`mb-1 text-xs font-semibold uppercase tracking-[0.26em] ${tk.surahLabel}`}>Muṣḥaf Reading</p>
+            <p className={`mb-1 text-xs font-semibold uppercase tracking-[0.26em] ${tk.surahLabel}`}>Muaf Reading</p>
             <h2 className={`truncate text-xl font-semibold sm:text-2xl ${tk.surahName}`} style={{ fontFamily: QURAN_FONT_FAMILY }}>
               {surahName}
             </h2>
@@ -665,13 +665,13 @@ export const AyahDisplay = ({
               <span>{surahNameEng}</span>
               {surahRevealedIn && (
                 <>
-                  <span className="opacity-40">•</span>
+                  <span className="opacity-40"></span>
                   <span className="rounded-full border border-current px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide opacity-70">{surahRevealedIn}</span>
                 </>
               )}
               {numberOfAyahs > 0 && (
                 <>
-                  <span className="opacity-40">•</span>
+                  <span className="opacity-40"></span>
                   <span>{toArabicNumber(numberOfAyahs)} Ayahs</span>
                 </>
               )}
@@ -758,15 +758,15 @@ export const AyahDisplay = ({
             </button>
           </div>
 
-          {/* ── Main page section ── */}
+          {/*  Main page section  */}
           <section className={`rounded-none border-x-0 border-y ${tk.sectionWrap} p-3 shadow-none sm:rounded-[30px] sm:border sm:p-6 sm:shadow-[0_26px_60px_rgba(17,24,39,0.18)]`}>
             {/* Page header: surah name(s) left, juz + page right */}
             <div className={`mb-5 flex items-center justify-between gap-4 border-b ${tk.sectionInfo} pb-4 text-sm`}>
               <div className="truncate" style={{ fontFamily: QURAN_FONT_FAMILY }}>
-                {currentPageSurahNames.join(' • ') || surahName}
+                {currentPageSurahNames.join('  ') || surahName}
               </div>
               <div className="shrink-0">
-                {currentPageJuz ? `الجزء ${toArabicNumber(currentPageJuz)}` : ''}{currentPageJuz ? ' • ' : ''}صفحة {toArabicNumber(currentPage?.pageNumber)}
+                {currentPageJuz ? ` ${toArabicNumber(currentPageJuz)}` : ''}{currentPageJuz ? '  ' : ''} {toArabicNumber(currentPage?.pageNumber)}
               </div>
             </div>
 
@@ -776,7 +776,7 @@ export const AyahDisplay = ({
               className={`rounded-xl border ${tk.article} px-3 py-6 sm:rounded-3xl sm:px-8 sm:py-10 lg:px-12`}
               style={{ animation: 'mushafFadeIn 0.35s ease' }}
             >
-              {/* ── Surah header inside the page (on page 1 of each surah) ── */}
+              {/*  Surah header inside the page (on page 1 of each surah)  */}
               {currentPageIndex === 0 && (
                 <div className="mb-6 text-center select-none" style={{ animation: 'mushafSlideUp 0.4s ease' }}>
                   {/* Top ornamental border */}
@@ -804,8 +804,8 @@ export const AyahDisplay = ({
                   </h2>
                   <p className={`mt-1 text-sm font-semibold tracking-wide ${tk.surahSub}`}>
                     {surahNameEng}
-                    {surahRevealedIn ? ` · ${surahRevealedIn}` : ''}
-                    {numberOfAyahs > 0 ? ` · ${toArabicNumber(numberOfAyahs)} Verses` : ''}
+                    {surahRevealedIn ? `  ${surahRevealedIn}` : ''}
+                    {numberOfAyahs > 0 ? `  ${toArabicNumber(numberOfAyahs)} Verses` : ''}
                   </p>
 
                   {/* Bottom ornamental border */}
@@ -823,7 +823,7 @@ export const AyahDisplay = ({
                     <div className="h-px flex-1" style={{ background: tk.basmalaDivider }} />
                   </div>
 
-                  {/* ── Basmala on its own centered line (all surahs except 9) ── */}
+                  {/*  Basmala on its own centered line (all surahs except 9)  */}
                   {currentSurahNumber !== 9 && (
                     <p
                       className={`mt-5 text-center text-2xl sm:text-3xl ${tk.basmala}`}
@@ -836,13 +836,13 @@ export const AyahDisplay = ({
                         width: '100%',
                       }}
                     >
-                      بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+                         
                     </p>
                   )}
                 </div>
               )}
 
-              {/* ── Continuous flowing Quran text ── */}
+              {/*  Continuous flowing Quran text  */}
               <div
                 dir="rtl"
                 className={`text-right ${tk.textClass}`}
@@ -862,7 +862,7 @@ export const AyahDisplay = ({
                   const ayahKey = `${ayah.surahNumber}:${ayah.number}`;
                   const mk = isBookmarked ? tk.markerBookmarked : tk.markerNormal;
 
-                  // Ornate SVG star/rosette ayah number marker — inline in the text flow
+                  // Ornate SVG star/rosette ayah number marker  inline in the text flow
                   const AyahMarker = () => (
                     <span
                       className="inline-flex items-center justify-center align-middle"
@@ -906,7 +906,7 @@ export const AyahDisplay = ({
                     );
                   }
 
-                  // Current surah ayahs — word-level interaction
+                  // Current surah ayahs  word-level interaction
                   const words = ayah.text.split(/\s+/).filter(Boolean);
 
                   return (
@@ -959,7 +959,7 @@ export const AyahDisplay = ({
               <div className="mt-10 flex items-center justify-center gap-3">
                 <div className={`h-px flex-1 ${tk.pageDivider}`} />
                 <div className={`text-sm font-semibold ${tk.pageNum}`} style={{ fontFamily: 'Manrope, system-ui, sans-serif' }}>
-                  ـ {toArabicNumber(currentPage?.pageNumber)} ـ
+                   {toArabicNumber(currentPage?.pageNumber)} 
                 </div>
                 <div className={`h-px flex-1 ${tk.pageDivider}`} />
               </div>

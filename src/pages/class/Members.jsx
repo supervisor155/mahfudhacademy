@@ -207,7 +207,7 @@ export default function Members() {
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Class Invite Code</p>
             <div className="flex items-center gap-3">
               <div className="flex-1 rounded-2xl border-2 border-[#b8d8ce] bg-white px-5 py-4 font-mono text-2xl font-bold tracking-[0.15em] text-[#2d5a56] select-all">
-                {inviteCode || '—'}
+                {inviteCode || ''}
               </div>
               <button
                 onClick={handleCopyCode}
@@ -278,7 +278,7 @@ export default function Members() {
         </div>
       )}
 
-      {/* Access Requests — teacher only */}
+      {/* Access Requests  teacher only */}
       {isTeacher && accessRequests.length > 0 && (
         <div className="rounded-[28px] border border-amber-200 bg-amber-50 p-5">
           <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-amber-800">

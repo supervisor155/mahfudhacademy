@@ -30,7 +30,7 @@ export default function NotificationBell({ darkMode = false, className = '' }) {
       setNotifications(res.data.data || []);
       setUnread(res.data.unread || 0);
     } catch {
-      // silent — notifications are non-critical
+      // silent  notifications are non-critical
     } finally {
       setLoading(false);
     }

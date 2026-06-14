@@ -198,7 +198,7 @@ export default function ReelsPage() {
 
       {/* Keyboard Hint */}
       <div className="absolute bottom-4 right-4 z-40 text-white/50 text-xs text-right">
-        <p>↑↓ Navigate</p>
+        <p> Navigate</p>
         <p>ESC Go back</p>
       </div>
     </div>

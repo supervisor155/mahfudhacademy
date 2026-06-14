@@ -15,7 +15,7 @@ let currentToken = null;
 export function getSocket(token) {
   // If token changed, disconnect old socket
   if (socketInstance && currentToken !== token) {
-    console.log('🔌 Token changed, reconnecting socket');
+    console.log(' Token changed, reconnecting socket');
     socketInstance.disconnect();
     socketInstance = null;
   }
@@ -27,7 +27,7 @@ export function getSocket(token) {
 
   // Create new socket
   if (!socketInstance && token) {
-    console.log('🔌 Creating new socket connection:', SOCKET_BASE_URL);
+    console.log(' Creating new socket connection:', SOCKET_BASE_URL);
     currentToken = token;
 
     socketInstance = io(SOCKET_BASE_URL, {
@@ -44,19 +44,19 @@ export function getSocket(token) {
     });
 
     socketInstance.on('connect', () => {
-      console.log('✅ Socket connected:', socketInstance.id);
+      console.log(' Socket connected:', socketInstance.id);
     });
 
     socketInstance.on('disconnect', (reason) => {
-      console.warn('❌ Socket disconnected:', reason);
+      console.warn(' Socket disconnected:', reason);
     });
 
     socketInstance.on('connect_error', (error) => {
-      console.error('🚨 Socket connection error:', error.message);
+      console.error(' Socket connection error:', error.message);
     });
 
     socketInstance.on('reconnect', (attemptNumber) => {
-      console.log(`🔄 Socket reconnected after ${attemptNumber} attempts`);
+      console.log(` Socket reconnected after ${attemptNumber} attempts`);
     });
   }
 
@@ -68,7 +68,7 @@ export function getSocket(token) {
  */
 export function disconnectSocket() {
   if (socketInstance) {
-    console.log('🔌 Disconnecting socket');
+    console.log(' Disconnecting socket');
     socketInstance.disconnect();
     socketInstance = null;
     currentToken = null;

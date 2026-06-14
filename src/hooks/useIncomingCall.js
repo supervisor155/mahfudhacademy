@@ -19,7 +19,7 @@ export default function useIncomingCall() {
     if (!socket) return;
 
     const handleIncoming = (callData) => {
-      console.log('📞 Incoming call:', callData);
+      console.log(' Incoming call:', callData);
       setIncomingCall(callData);
     };
 
@@ -51,11 +51,11 @@ export default function useIncomingCall() {
   }, [token, user]);
 
   const acceptCall = (callData) => {
-    console.log('✅ Accepting call:', callData);
+    console.log(' Accepting call:', callData);
 
     const socket = getSocket(token);
     if (!socket) {
-      console.error('❌ No socket connection');
+      console.error(' No socket connection');
       return;
     }
 
@@ -69,10 +69,10 @@ export default function useIncomingCall() {
     // Navigate to session with call type
     if (callData.sessionId) {
       const url = `/session/${callData.sessionId}?type=${callData.callType || 'video'}`;
-      console.log('🔄 Navigating to:', url);
+      console.log(' Navigating to:', url);
       navigate(url);
     } else {
-      console.error('❌ No sessionId in call data:', callData);
+      console.error(' No sessionId in call data:', callData);
     }
 
     setIncomingCall(null);

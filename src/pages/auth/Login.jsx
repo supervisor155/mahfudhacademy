@@ -85,7 +85,7 @@ export default function Login() {
         logo_alignment: 'left',
       });
     }).catch(() => {
-      // Google script failed to load — silent, basic login still works
+      // Google script failed to load  silent, basic login still works
     });
 
     return () => { cancelled = true; };

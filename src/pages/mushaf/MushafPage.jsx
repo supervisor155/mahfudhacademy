@@ -20,7 +20,7 @@ export default function MushafPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <h1 className="text-3xl font-bold flex items-center gap-2">
-          <FaBook /> Smart Muṣḥaf
+          <FaBook /> Smart Muaf
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -52,7 +52,7 @@ export default function MushafPage() {
             <div className="bg-white rounded-lg shadow p-8">
               <h2 className="text-2xl font-bold mb-6 text-center">Surah {selectedSurah}</h2>
               <div className="text-lg leading-relaxed text-gray-700 min-h-64">
-                <p className="text-center text-gray-600">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+                <p className="text-center text-gray-600">   </p>
                 <p className="mt-6 text-justify">
                   Lorem ipsum dolor sit amet, consectetur adipiscing elit. This is placeholder Quranic text...
                 </p>

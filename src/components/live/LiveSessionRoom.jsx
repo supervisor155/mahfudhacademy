@@ -153,14 +153,14 @@ export default function LiveSessionRoom() {
     };
 
     const handleScreenShareStarted = ({ socket_id, user_name }) => {
-      console.log('📺 Screen share started by:', user_name);
+      console.log(' Screen share started by:', user_name);
       setScreenShareActive(true);
       setScreenSharingPeerId(socket_id);
       setScreenSharingName(user_name);
     };
 
     const handleScreenShareStopped = () => {
-      console.log('📺 Screen share stopped');
+      console.log(' Screen share stopped');
       setScreenShareActive(false);
       setScreenSharingPeerId(null);
       setScreenSharingName('');
@@ -332,15 +332,15 @@ export default function LiveSessionRoom() {
             connectionState === 'reconnecting' ? 'bg-orange-600' :
             'bg-gray-700'
           }`}>
-            {connectionState === 'requesting-media' && '🎥 Starting camera...'}
-            {connectionState === 'media-ready' && '✓ Ready'}
-            {connectionState === 'connecting' && '⏳ Connecting...'}
-            {connectionState === 'reconnecting' && '🔄 Reconnecting...'}
+            {connectionState === 'requesting-media' && ' Starting camera...'}
+            {connectionState === 'media-ready' && ' Ready'}
+            {connectionState === 'connecting' && ' Connecting...'}
+            {connectionState === 'reconnecting' && ' Reconnecting...'}
           </span>
         )}
         {isAudioOnly && (
           <span className="rounded-full bg-[#2d5a56] px-3 py-1 text-xs font-semibold">
-            🎧 Audio-Only
+             Audio-Only
           </span>
         )}
         <button onClick={toggleFullscreen} className="rounded-lg p-2 hover:bg-gray-700">
@@ -377,7 +377,7 @@ export default function LiveSessionRoom() {
                 {/* Presenter label */}
                 <div className="absolute bottom-4 left-4 flex items-center gap-2 rounded-xl bg-black/70 px-4 py-2 text-sm font-semibold">
                   <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-                  📺 {screenSharingName} is presenting
+                   {screenSharingName} is presenting
                 </div>
                 {/* Stop sharing button for local presenter */}
                 {isScreenSharing && (

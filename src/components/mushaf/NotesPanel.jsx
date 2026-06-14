@@ -74,7 +74,7 @@ export const NotesPanel = ({
         <div className="min-w-0 flex-1">
           <h3 className="font-semibold text-slate-900">
             Ayah {selectedAyah.number}
-            {note && <span className="text-xs ml-2 text-green-600">✓ Has Note</span>}
+            {note && <span className="text-xs ml-2 text-green-600"> Has Note</span>}
           </h3>
           <p className="mt-1 break-words text-xs text-slate-500">
             {selectedAyah.surahNameEng} {selectedAyah.surahNumber}:{selectedAyah.number}

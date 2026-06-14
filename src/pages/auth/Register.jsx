@@ -199,7 +199,7 @@ export default function Register() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder=""
                   className="w-full rounded-xl border border-[#d3daea] bg-white px-3 py-2.5 text-sm outline-none focus:border-[#5b74c8]"
                   required
                 />

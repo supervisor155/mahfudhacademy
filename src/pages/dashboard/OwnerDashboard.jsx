@@ -542,7 +542,7 @@ export default function OwnerDashboard() {
       <div className={`flex min-h-screen items-center justify-center ${bg}`} style={{ fontFamily: 'Sora, Manrope, system-ui, sans-serif' }}>
         <div className="text-center">
           <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-[#4c6fb8] border-t-transparent" />
-          <p className={`text-lg font-semibold ${text}`}>Loading Owner Dashboard…</p>
+          <p className={`text-lg font-semibold ${text}`}>Loading Owner Dashboard</p>
         </div>
       </div>
     );
@@ -1072,7 +1072,7 @@ export default function OwnerDashboard() {
                             <div className="flex flex-col gap-3">
                               <div className="min-w-0">
                                 <p className={`text-sm font-semibold ${text}`}>{meta.title || `Security ticket #${ticket.id}`}</p>
-                                <p className={`mt-1 text-xs ${muted}`}>Severity: {meta.severity || 'high'} • Status: {status} • {timeAgo(ticket.created_at)}</p>
+                                <p className={`mt-1 text-xs ${muted}`}>Severity: {meta.severity || 'high'}  Status: {status}  {timeAgo(ticket.created_at)}</p>
                                 {meta.details ? (
                                   <p className={`mt-1 truncate text-xs ${muted}`}>{JSON.stringify(meta.details).slice(0, 140)}</p>
                                 ) : null}

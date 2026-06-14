@@ -42,7 +42,7 @@ export default function ClassHome() {
     return () => clearInterval(id);
   }, [liveCountdown?.scheduled_start]);
 
-  // ── Socket: listen for teacher "Raise Mushaf" events ──────────────────
+  //  Socket: listen for teacher "Raise Mushaf" events 
   useEffect(() => {
     if (!token || !classId) return;
     const socket = createAppSocket(token);
@@ -58,7 +58,7 @@ export default function ClassHome() {
     };
   }, [classId, token]);
 
-  // Dark mode — persisted in localStorage
+  // Dark mode  persisted in localStorage
   const [darkMode, setDarkMode] = useState(() => {
     try { return localStorage.getItem('classDarkMode') === 'true'; } catch { return false; }
   });
@@ -256,7 +256,7 @@ export default function ClassHome() {
     );
   }
 
-  // Non-member preview — user can see class info and request access
+  // Non-member preview  user can see class info and request access
   if (classData?.isPreview) {
     const cover = COVERS[classData.cover_color] || COVERS.teal;
     const initial = (classData.name || '?').charAt(0).toUpperCase();
@@ -321,7 +321,7 @@ export default function ClassHome() {
                   disabled={requesting}
                   className="w-full rounded-2xl border border-[#d7ded9] bg-[#f5f7f5] px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-white disabled:opacity-60 active:scale-95"
                 >
-                  {requesting ? 'Sending…' : 'Request Access'}
+                  {requesting ? 'Sending' : 'Request Access'}
                 </button>
               )}
               <button
@@ -426,10 +426,10 @@ export default function ClassHome() {
           <div className="flex w-full max-w-lg items-center gap-3 rounded-2xl border border-[#c8dcd9] bg-[#2d5a56] px-5 py-3.5 text-white shadow-2xl">
             <FaChalkboardTeacher className="shrink-0 text-lg text-teal-200" />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold">Teacher is showing the Muṣḥaf</p>
+              <p className="text-sm font-semibold">Teacher is showing the Muaf</p>
               <p className="truncate text-xs text-teal-200">
                 {mushafBanner.surah_name ? `Surah ${mushafBanner.surah_name}` : `Surah ${mushafBanner.surah_id}`}
-                {mushafBanner.ayah_number > 1 ? ` — Ayah ${mushafBanner.ayah_number}` : ''}
+                {mushafBanner.ayah_number > 1 ? `  Ayah ${mushafBanner.ayah_number}` : ''}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -569,7 +569,7 @@ export default function ClassHome() {
           </div>
         </section>
 
-        {/* Navigation Tabs — desktop */}
+        {/* Navigation Tabs  desktop */}
         <nav className={`mb-6 hidden gap-1 overflow-x-auto rounded-3xl border px-3 py-2 shadow-sm sm:flex lg:flex-wrap lg:overflow-visible ${tabBg}`}>
           {tabs.map((tab) => (
             <button
@@ -590,7 +590,7 @@ export default function ClassHome() {
           ))}
         </nav>
 
-        {/* Sticky bottom nav — mobile */}
+        {/* Sticky bottom nav  mobile */}
         <nav className={`fixed inset-x-0 bottom-0 z-30 border-t pb-safe shadow-[0_-10px_30px_rgba(17,24,39,0.08)] backdrop-blur sm:hidden ${mobileNavBg}`}>
           {/* Back button row */}
           <div className={`flex items-center gap-3 border-b px-3 py-2 ${divider}`}>
@@ -606,7 +606,7 @@ export default function ClassHome() {
             </span>
           </div>
 
-          {/* Tabs — scroll horizontally */}
+          {/* Tabs  scroll horizontally */}
           <div
             className="flex overflow-x-auto py-2 px-2 gap-1"
             style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
@@ -636,7 +636,7 @@ export default function ClassHome() {
           {currentSub === 'overview' ? (
             <div className="space-y-5">
 
-              {/* Quick Actions — teacher */}
+              {/* Quick Actions  teacher */}
               {isTeacher && (
                 <section className={`rounded-[28px] border p-6 shadow-[0_10px_30px_rgba(17,24,39,0.05)] ${card}`}>
                   <h2 className={`text-base font-bold mb-4 ${textMain}`}>Quick Actions</h2>
@@ -661,7 +661,7 @@ export default function ClassHome() {
                 </section>
               )}
 
-              {/* Quick Actions — student */}
+              {/* Quick Actions  student */}
               {!isTeacher && (
                 <section className={`rounded-[28px] border p-5 shadow-[0_10px_30px_rgba(17,24,39,0.05)] ${card}`}>
                   <h2 className={`text-sm font-bold uppercase tracking-widest mb-3 ${muted}`}>Quick Access</h2>
@@ -688,10 +688,10 @@ export default function ClassHome() {
               {/* Stats row */}
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 {[
-                  { label: 'Students',    value: classData?.memberCount ?? '—', icon: <FaUserGraduate />, tab: 'members',     color: 'text-[#2d5a56]', bg: dm ? 'bg-[#1a2f2c]' : 'bg-[#e7f3ef]' },
-                  { label: 'Assignments', value: upcomingAssignments.length || '—', icon: <FaTasks />,   tab: 'assignments',  color: 'text-[#3a66b8]', bg: dm ? 'bg-[#1a2338]' : 'bg-[#edf3f8]' },
-                  { label: 'Videos',      value: videoCount ?? '—',              icon: <FaVideo />,       tab: 'videos',       color: 'text-[#c26d32]', bg: dm ? 'bg-[#2a1f14]' : 'bg-[#fff0e7]' },
-                  { label: 'Files',       value: fileCount ?? '—',               icon: <FaPaperclip />,   tab: 'files',        color: 'text-[#7d57b1]', bg: dm ? 'bg-[#22193a]' : 'bg-[#f3effd]' },
+                  { label: 'Students',    value: classData?.memberCount ?? '', icon: <FaUserGraduate />, tab: 'members',     color: 'text-[#2d5a56]', bg: dm ? 'bg-[#1a2f2c]' : 'bg-[#e7f3ef]' },
+                  { label: 'Assignments', value: upcomingAssignments.length || '', icon: <FaTasks />,   tab: 'assignments',  color: 'text-[#3a66b8]', bg: dm ? 'bg-[#1a2338]' : 'bg-[#edf3f8]' },
+                  { label: 'Videos',      value: videoCount ?? '',              icon: <FaVideo />,       tab: 'videos',       color: 'text-[#c26d32]', bg: dm ? 'bg-[#2a1f14]' : 'bg-[#fff0e7]' },
+                  { label: 'Files',       value: fileCount ?? '',               icon: <FaPaperclip />,   tab: 'files',        color: 'text-[#7d57b1]', bg: dm ? 'bg-[#22193a]' : 'bg-[#f3effd]' },
                 ].map((s) => (
                   <button
                     key={s.tab}
@@ -702,7 +702,7 @@ export default function ClassHome() {
                       {s.icon}
                     </div>
                     <p className={`text-2xl font-bold ${textMain}`}>
-                      {overviewLoading && s.value === '—' ? (
+                      {overviewLoading && s.value === '' ? (
                         <span className={`inline-block h-6 w-8 animate-pulse rounded ${dm ? 'bg-[#1f2a34]' : 'bg-slate-200'}`} />
                       ) : s.value}
                     </p>

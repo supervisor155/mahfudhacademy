@@ -40,7 +40,7 @@ export const useAyahNotes = (surahNumber) => {
   const [readingProgress, setReadingProgress] = useState({});
   const [loading, setLoading] = useState(false);
 
-  // ── load notes + bookmarks + progress for this surah ──────────────────────
+  //  load notes + bookmarks + progress for this surah 
   const fetchAll = useCallback(async () => {
     if (!surahNumber) return;
     setLoading(true);
@@ -88,14 +88,14 @@ export const useAyahNotes = (surahNumber) => {
           progress: map,
         });
       }
-    } catch { /* silent — non-blocking */ } finally {
+    } catch { /* silent  non-blocking */ } finally {
       setLoading(false);
     }
   }, [surahNumber]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  // ── Notes ──────────────────────────────────────────────────────────────────
+  //  Notes 
 
   const saveNote = async (ayahNumber, noteText) => {
     const ayah_id = `${surahNumber}:${ayahNumber}`;
@@ -158,7 +158,7 @@ export const useAyahNotes = (surahNumber) => {
     return notes.find(n => n.ayah_id === ayah_id) || null;
   };
 
-  // ── Bookmarks ──────────────────────────────────────────────────────────────
+  //  Bookmarks 
 
   const toggleBookmark = async (ayahNumber) => {
     const ayah_id = `${surahNumber}:${ayahNumber}`;
@@ -186,7 +186,7 @@ export const useAyahNotes = (surahNumber) => {
 
   const isBookmarked = (ayahNumber) => bookmarks.includes(`${surahNumber}:${ayahNumber}`);
 
-  // ── Reading Progress ───────────────────────────────────────────────────────
+  //  Reading Progress 
 
   const updateProgress = async (ayahNumber, totalAyahs) => {
     const percent = Math.min(100, Math.round((ayahNumber / Math.max(1, totalAyahs)) * 100));

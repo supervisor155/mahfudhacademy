@@ -343,7 +343,7 @@ export default function Videos() {
                       <FaUpload className="text-3xl text-slate-400" />
                       <div className="text-center">
                         <p className="font-semibold text-slate-700 text-sm">Click to select a video file</p>
-                        <p className="text-xs text-slate-400 mt-1">MP4, MOV, WebM — max 500 MB</p>
+                        <p className="text-xs text-slate-400 mt-1">MP4, MOV, WebM  max 500 MB</p>
                       </div>
                     </>
                   )}

@@ -100,7 +100,7 @@ API.interceptors.response.use(
 
     // Enhanced error logging for production debugging
     if (status >= 500 || !status) {
-      console.error('🚨 API Error:', {
+      console.error(' API Error:', {
         url: cfg.url,
         method: cfg.method,
         status: status || 'Network Error',
@@ -117,7 +117,7 @@ API.interceptors.response.use(
         cfg.headers.Authorization = `Bearer ${nextAccess}`;
         return API(cfg);
       } catch (refreshError) {
-        console.warn('⚠️ Token refresh failed, redirecting to login');
+        console.warn(' Token refresh failed, redirecting to login');
         localStorage.removeItem(ACCESS_TOKEN_KEY);
         localStorage.removeItem(REFRESH_TOKEN_KEY);
         sessionStorage.removeItem(ACCESS_TOKEN_KEY);
@@ -136,7 +136,7 @@ API.interceptors.response.use(
 
     cfg.__retryCount += 1;
     const backoff = 400 * Math.pow(2, cfg.__retryCount - 1);
-    console.log(`🔄 Retrying request (${cfg.__retryCount}/${MAX_RETRIES}) after ${backoff}ms:`, cfg.url);
+    console.log(` Retrying request (${cfg.__retryCount}/${MAX_RETRIES}) after ${backoff}ms:`, cfg.url);
     await wait(backoff);
     return API(cfg);
   }

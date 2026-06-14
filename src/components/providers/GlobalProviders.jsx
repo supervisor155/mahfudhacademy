@@ -10,8 +10,15 @@ import { useAuth } from "../../contexts/AuthContext";
  * Global providers that need Router and Auth context
  * Wraps around the routes to provide global modals and notifications
  */
-// Pages where bottom nav should NOT appear (fullscreen experiences)
-const HIDE_NAV_PATHS = ['/session/', '/login', '/register', '/mushaf'];
+// Pages where the global bottom nav should NOT appear
+// (either they have their own nav, or are fullscreen experiences)
+const HIDE_NAV_PATHS = [
+  '/session/',
+  '/login',
+  '/register',
+  '/mushaf',
+  '/dashboard', // dashboards have their own integrated bottom nav
+];
 
 export default function GlobalProviders({ children }) {
   const { incomingCall, acceptCall, rejectCall, timeoutCall } = useIncomingCall();

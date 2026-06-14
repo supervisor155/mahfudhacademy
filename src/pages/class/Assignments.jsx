@@ -240,7 +240,7 @@ export default function Assignments() {
                 key={a.id}
                 className="overflow-hidden rounded-3xl border border-[#e3e7e3] bg-white shadow-[0_6px_20px_rgba(17,24,39,0.05)] transition hover:border-[#c7d6d2]"
               >
-                {/* Assignment header — clickable */}
+                {/* Assignment header  clickable */}
                 <button
                   onClick={() => openAssignment(a)}
                   className="w-full text-left px-6 py-5 flex items-start gap-4"
@@ -327,7 +327,7 @@ export default function Assignments() {
                                 <div className="flex items-center justify-between mb-2">
                                   <div>
                                     <p className="font-semibold text-slate-800 text-sm">{sub.student_name}</p>
-                                    <p className="text-xs text-slate-400">{sub.email} · {new Date(sub.submitted_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</p>
+                                    <p className="text-xs text-slate-400">{sub.email}  {new Date(sub.submitted_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</p>
                                   </div>
                                   {sub.status === 'graded' && (
                                     <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">

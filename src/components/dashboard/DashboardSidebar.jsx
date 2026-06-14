@@ -3,11 +3,11 @@ import { FaBook, FaComments, FaFilm, FaHome, FaVideo } from 'react-icons/fa';
 
 export default function DashboardSidebar({ activeTab, onTabChange }) {
   const tabs = [
-    { id: 'dashboard', label: 'Dashboard', icon: FaHome, arabic: 'الرئيسية' },
-    { id: 'classes', label: 'Classes', icon: FaBook, arabic: 'الفصول' },
-    { id: 'chat', label: 'Chat', icon: FaComments, arabic: 'الدردشة' },
-    { id: 'reels', label: 'Reels', icon: FaFilm, arabic: 'المقاطع' },
-    { id: 'sessions', label: 'Live Sessions', icon: FaVideo, arabic: 'الجلسات المباشرة' },
+    { id: 'dashboard', label: 'Dashboard', icon: FaHome, arabic: '' },
+    { id: 'classes', label: 'Classes', icon: FaBook, arabic: '' },
+    { id: 'chat', label: 'Chat', icon: FaComments, arabic: '' },
+    { id: 'reels', label: 'Reels', icon: FaFilm, arabic: '' },
+    { id: 'sessions', label: 'Live Sessions', icon: FaVideo, arabic: ' ' },
   ];
 
   return (
