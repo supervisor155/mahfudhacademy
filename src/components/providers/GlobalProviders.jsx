@@ -12,12 +12,20 @@ import { useAuth } from "../../contexts/AuthContext";
  */
 // Pages where the global bottom nav should NOT appear
 // (either they have their own nav, or are fullscreen experiences)
+// Pages that must NOT show the global bottom nav
+// - /dashboard  has its own built-in nav
+// - /class/     has its own class navigation
+// - /chat       full-screen, no nav needed
+// - /session/   fullscreen video room
+// - /login /register /mushaf  no nav
 const HIDE_NAV_PATHS = [
+  '/dashboard',
+  '/class/',
+  '/chat',
   '/session/',
   '/login',
   '/register',
   '/mushaf',
-  '/dashboard', // dashboards have their own integrated bottom nav
 ];
 
 export default function GlobalProviders({ children }) {

@@ -292,9 +292,13 @@ export default function ManagerDashboard() {
                 >
                   {darkMode ? <FaSun /> : <FaMoon />}
                 </button>
-                <div className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold ${darkMode ? 'bg-[#1a232a] text-[#b6f2d6]' : 'bg-[#dce8e2] text-[#234946]'}`}>
+                <button
+                  onClick={() => navigate('/profile')}
+                  title="My Profile"
+                  className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold transition hover:ring-2 hover:ring-[#2d5a56] ${darkMode ? 'bg-[#1a232a] text-[#b6f2d6]' : 'bg-[#dce8e2] text-[#234946]'}`}
+                >
                   <FaUserCircle className="text-2xl" />
-                </div>
+                </button>
               </div>
             </div>
 

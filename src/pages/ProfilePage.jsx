@@ -35,7 +35,7 @@ export default function ProfilePage() {
     : 'Member';
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-32 sm:pb-8">
+    <div className="min-h-screen bg-gray-50" style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px) + 80px, 80px)' }}>
 
       {/* Header */}
       <div className="sticky top-0 z-10 border-b border-gray-200 bg-white">

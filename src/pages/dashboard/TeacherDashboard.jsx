@@ -498,11 +498,13 @@ function TeacherDashboard() {
                   <FaPlus />
                   New Class
                 </button>
-                <div
+                <button
+                  onClick={() => navigate('/profile')}
+                  title="My Profile"
                   className={
                     darkMode
-                      ? 'flex h-11 w-11 items-center justify-center rounded-full bg-[#1a232a] text-sm font-bold text-[#b6f2d6]'
-                      : 'flex h-11 w-11 items-center justify-center rounded-full bg-[#dce8e2] text-sm font-bold text-[#234946]'
+                      ? 'flex h-11 w-11 items-center justify-center rounded-full bg-[#1a232a] text-sm font-bold text-[#b6f2d6] transition hover:ring-2 hover:ring-[#2d5a56]'
+                      : 'flex h-11 w-11 items-center justify-center rounded-full bg-[#dce8e2] text-sm font-bold text-[#234946] transition hover:ring-2 hover:ring-[#2d5a56]'
                   }
                 >
                   {user?.avatarUrl ? (
@@ -510,7 +512,7 @@ function TeacherDashboard() {
                   ) : (
                     <FaUserCircle className="text-2xl" />
                   )}
-                </div>
+                </button>
               </div>
             </div>
           </header>

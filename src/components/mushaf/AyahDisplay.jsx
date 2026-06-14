@@ -16,11 +16,29 @@ import API from '../../services/api';
 import { quranCache } from '../../db/dexie';
 
 const RECITERS = [
-  { id: 'ar.alafasy', label: 'Mishary Alafasy' },
-  { id: 'ar.husary', label: 'Mahmoud Khalil Al-Husary' },
-  { id: 'ar.abdurrahmaansudais', label: 'Abdul Rahman Al-Sudais' },
-  { id: 'ar.saoodshuraym', label: 'Saood Al-Shuraym' },
+  { id: 'ar.alafasy',            label: 'Mishary Alafasy',           cdn: 'ar.alafasy' },
+  { id: 'ar.husary',             label: 'Mahmoud Khalil Al-Husary',  cdn: 'ar.husary' },
+  { id: 'ar.abdurrahmaansudais', label: 'Abdul Rahman Al-Sudais',    cdn: 'ar.abdurrahmaansudais' },
+  { id: 'ar.saoodshuraym',       label: 'Saood Al-Shuraym',          cdn: 'ar.saoodshuraym' },
 ];
+
+// Cumulative ayah counts per surah (index 0 = surah 1).
+// Used to compute global ayah number = SURAH_STARTS[surah-1] + ayahNumber
+const SURAH_STARTS = [
+  0,1,7,293,494,687,823,996,1163,1235,1365,1474,1597,1700,1756,1818,1883,1953,2030,2141,2251,
+  2349,2484,2596,2674,2791,2856,2933,2978,3051,3116,3185,3202,3227,3286,3382,3471,3546,3604,
+  3631,3721,3816,3872,3920,3987,4000,4034,4112,4218,4273,4325,4415,4474,4511,4545,4584,4613,
+  4631,4675,4736,4755,4784,4847,4902,4920,4943,4975,5035,5075,5105,5126,5146,5164,5177,5188,
+  5200,5211,5220,5230,5240,5248,5259,5269,5277,5284,5292,5299,5305,5312,5318,5323,5329,5334,
+  5338,5342,5347,5351,5357,5362,5366,5371,5375,5379,5383,5386,5390,5393,5395,5397,5399,5401,
+  5403,5405,5408,5411,5414,5416,5418,
+];
+
+function getAudioUrl(reciterId, surahNumber, ayahNumber) {
+  const reciter = RECITERS.find(r => r.id === reciterId) || RECITERS[0];
+  const globalNum = SURAH_STARTS[surahNumber - 1] + ayahNumber;
+  return `https://cdn.islamic.network/quran/audio/128/${reciter.cdn}/${globalNum}.mp3`;
+}
 
 const QURAN_FONT_FAMILY = '"KFGQPC Uthman Taha Naskh", "KFGQPC Hafs Uthmanic Script", "Noto Naskh Arabic", serif';
 
@@ -342,48 +360,38 @@ export const AyahDisplay = ({
 
   async function playSurahAyahAtIndex(index) {
     const ayah = ayahs[index];
-
     if (!ayah) return;
 
     setSurahAudioState({ loading: true, playing: false, currentIndex: index, error: '' });
 
     try {
-      const cacheKey = `${selectedReciter}|${currentSurahNumber}:${ayah.number}`;
-      let audioUrl = audioUrlCache.current[cacheKey];
+      // Build the CDN URL directly — no API round-trip, user gesture stays valid
+      const audioUrl = getAudioUrl(selectedReciter, currentSurahNumber, ayah.number);
 
-      if (!audioUrl) {
-        const response = await API.get(`/api/quran/audio/ayah/${currentSurahNumber}/${ayah.number}`, {
-          params: { reciter: selectedReciter },
-        });
-        audioUrl = response.data?.data?.audio;
-        if (!audioUrl) throw new Error('No audio URL returned');
-        audioUrlCache.current[cacheKey] = audioUrl;
-      }
+      const el = audioRef.current;
+      if (!el) return;
 
-      if (audioRef.current) {
-        // Set src and let the browser load it, then play once enough data is ready
-        audioRef.current.src = audioUrl;
-        audioRef.current.load();
+      el.src = audioUrl;
+      el.load();
 
-        await new Promise((resolve, reject) => {
-          const el = audioRef.current;
-          const onCanPlay = () => { el.removeEventListener('canplay', onCanPlay); el.removeEventListener('error', onError); resolve(); };
-          const onError = () => { el.removeEventListener('canplay', onCanPlay); el.removeEventListener('error', onError); reject(new Error('Audio load error')); };
-          el.addEventListener('canplay', onCanPlay);
-          el.addEventListener('error', onError);
-        });
+      // Wait until enough data buffered, then play
+      await new Promise((resolve, reject) => {
+        const cleanup = () => {
+          el.removeEventListener('canplay', onOk);
+          el.removeEventListener('error', onErr);
+        };
+        const onOk  = () => { cleanup(); resolve(); };
+        const onErr = () => { cleanup(); reject(new Error('Audio failed to load')); };
+        el.addEventListener('canplay', onOk);
+        el.addEventListener('error', onErr);
+        // Timeout fallback: some browsers fire neither event on cached files
+        setTimeout(() => { cleanup(); resolve(); }, 3000);
+      });
 
-        await audioRef.current.play();
-      }
-
+      await el.play();
       setSurahAudioState({ loading: false, playing: true, currentIndex: index, error: '' });
     } catch {
-      setSurahAudioState({
-        loading: false,
-        playing: false,
-        currentIndex: index,
-        error: 'Could not load audio. Check your connection.',
-      });
+      setSurahAudioState({ loading: false, playing: false, currentIndex: index, error: 'Could not play audio.' });
     }
   }
 

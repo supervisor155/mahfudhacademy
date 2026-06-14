@@ -76,12 +76,6 @@ select {
   font: inherit;
 }
 
-/* Bottom nav clearance on mobile */
-@media (max-width: 639px) {
-  body > #root > * {
-    padding-bottom: 64px;
-  }
-}
 
 /* Hide scrollbar on thumbnail strip */
 .scrollbar-hide {

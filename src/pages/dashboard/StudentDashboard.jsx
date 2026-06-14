@@ -302,11 +302,15 @@ function StudentDashboard() {
                   <FaBookOpen className="text-xs" /> Mushaf
                 </button>
 
-                <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold ${dm ? 'bg-[#1f2c3a] text-[#b6f2d6]' : 'bg-[#d8e8e4] text-[#234946]'}`}>
+                <button
+                  onClick={() => navigate('/profile')}
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold transition hover:ring-2 hover:ring-[#2d5a56] ${dm ? 'bg-[#1f2c3a] text-[#b6f2d6]' : 'bg-[#d8e8e4] text-[#234946]'}`}
+                  title="My Profile"
+                >
                   {user?.avatarUrl
                     ? <img src={user.avatarUrl} alt="Profile" className="h-9 w-9 rounded-full object-cover" />
                     : <FaUserCircle className="text-xl" />}
-                </div>
+                </button>
               </div>
             </div>
           </header>
