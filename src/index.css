@@ -1,6 +1,18 @@
 @import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;600;700&display=swap');
 
+@keyframes slideInRight {
+  from { transform: translateX(110%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes shrink {
+  from { width: 100%; }
+  to   { width: 0%; }
+}
+.animate-slideInRight {
+  animation: slideInRight 0.3s ease-out;
+}
+
 @keyframes mushafFadeIn {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -62,4 +74,20 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+/* Bottom nav clearance on mobile */
+@media (max-width: 639px) {
+  body > #root > * {
+    padding-bottom: 64px;
+  }
+}
+
+/* Hide scrollbar on thumbnail strip */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

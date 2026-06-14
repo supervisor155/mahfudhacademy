@@ -361,7 +361,18 @@ export const AyahDisplay = ({
       }
 
       if (audioRef.current) {
+        // Set src and let the browser load it, then play once enough data is ready
         audioRef.current.src = audioUrl;
+        audioRef.current.load();
+
+        await new Promise((resolve, reject) => {
+          const el = audioRef.current;
+          const onCanPlay = () => { el.removeEventListener('canplay', onCanPlay); el.removeEventListener('error', onError); resolve(); };
+          const onError = () => { el.removeEventListener('canplay', onCanPlay); el.removeEventListener('error', onError); reject(new Error('Audio load error')); };
+          el.addEventListener('canplay', onCanPlay);
+          el.addEventListener('error', onError);
+        });
+
         await audioRef.current.play();
       }
 
@@ -371,7 +382,7 @@ export const AyahDisplay = ({
         loading: false,
         playing: false,
         currentIndex: index,
-        error: 'Could not load surah recitation.',
+        error: 'Could not load audio. Check your connection.',
       });
     }
   }

@@ -28,42 +28,42 @@ export default function Toast({
 
   const styles = {
     success: {
-      bg: 'bg-gradient-to-r from-green-500 to-green-600',
+      bg: 'bg-linear-to-r from-green-500 to-green-600',
       icon: <FaCheckCircle className="text-white" />,
       border: 'border-green-400'
     },
     error: {
-      bg: 'bg-gradient-to-r from-red-500 to-red-600',
+      bg: 'bg-linear-to-r from-red-500 to-red-600',
       icon: <FaExclamationTriangle className="text-white" />,
       border: 'border-red-400'
     },
     warning: {
-      bg: 'bg-gradient-to-r from-amber-500 to-amber-600',
+      bg: 'bg-linear-to-r from-amber-500 to-amber-600',
       icon: <FaExclamationTriangle className="text-white" />,
       border: 'border-amber-400'
     },
     info: {
-      bg: 'bg-gradient-to-r from-blue-500 to-blue-600',
+      bg: 'bg-linear-to-r from-blue-500 to-blue-600',
       icon: <FaInfoCircle className="text-white" />,
       border: 'border-blue-400'
     },
     message: {
-      bg: 'bg-gradient-to-r from-[#2d5a56] to-[#1e3e3b]',
+      bg: 'bg-linear-to-r from-[#2d5a56] to-[#1e3e3b]',
       icon: <FaComment className="text-white" />,
       border: 'border-[#2d5a56]'
     },
     video: {
-      bg: 'bg-gradient-to-r from-purple-500 to-purple-600',
+      bg: 'bg-linear-to-r from-purple-500 to-purple-600',
       icon: <FaVideo className="text-white" />,
       border: 'border-purple-400'
     },
     assignment: {
-      bg: 'bg-gradient-to-r from-indigo-500 to-indigo-600',
+      bg: 'bg-linear-to-r from-indigo-500 to-indigo-600',
       icon: <FaFileAlt className="text-white" />,
       border: 'border-indigo-400'
     },
     notification: {
-      bg: 'bg-gradient-to-r from-teal-500 to-teal-600',
+      bg: 'bg-linear-to-r from-teal-500 to-teal-600',
       icon: <FaBell className="text-white" />,
       border: 'border-teal-400'
     }
@@ -128,29 +128,6 @@ export default function Toast({
         )}
       </div>
 
-      <style jsx>{`
-        @keyframes slideInRight {
-          from {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-        @keyframes shrink {
-          from {
-            width: 100%;
-          }
-          to {
-            width: 0%;
-          }
-        }
-        .animate-slideInRight {
-          animation: slideInRight 0.3s ease-out;
-        }
-      `}</style>
     </div>
   );
 }

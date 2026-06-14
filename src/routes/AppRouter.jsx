@@ -27,6 +27,7 @@ const MushafViewer = lazy(() =>
   import("../pages/mushaf/MushafViewer").then((m) => ({ default: m.MushafViewer }))
 );
 const LiveSessionRoom = lazy(() => import("../components/live/LiveSessionRoom"));
+const ProfilePage = lazy(() => import("../pages/ProfilePage"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 
 function PageLoader() {
@@ -131,6 +132,9 @@ export default function AppRouter() {
 
         {/* Live Session Room */}
         <Route path="/session/:sessionId" element={<ProtectedRoute><LiveSessionRoom /></ProtectedRoute>} />
+
+        {/* Profile page */}
+        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
         {/* Muṣḥaf Viewer — open to all, no login required */}
         <Route path="/mushaf" element={<MushafViewer />} />
